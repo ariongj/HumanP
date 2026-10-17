@@ -1,0 +1,8 @@
+{
+  "verified_at": "2026-10-17",
+  "source_validation": {"file_hashes":114,"datasets":26,"market_records":3613,"employer_prospects":200,"catalogue_entries":1071,"catalogue_categories":23,"overlay_groups":11,"overlay_affected_records":445,"approved_public_items":0},
+  "finance": {"controlled_fixture":"synthetic","months":39,"scenarios":3,"comparison":"independent allowlisted evaluation of supplied workbook formulas","source_cache_used":false,"missing_input_and_delayed_collection_cases":true},
+  "tests": {"unit_and_contract_tests":11,"typecheck":"pass","production_build":"pass","anonymous_json_documents_exports":"denied","private_client_canaries":"absent"},
+  "browser": {"sections":9,"desktop_width":1440,"mobile_width":320,"uncaught_errors":0,"filtered_csv_export":"pass","source_drawer_escape":"pass","financial_local_draft_persistence":"pass","catalogue_search":"pass","document_full_text_search_and_download":"pass"},
+  "limits": ["Research is the supplied snapshot; external source freshness is not newly verified.","Financial actuals and clinical/operational signoffs are missing.","Drafts are browser-local and are not shared approvals or production record changes.","Printed tables show their current page; CSV exports cover their full filtered population.","Private Site publication and object upload must be verified separately from local checks."]
+}

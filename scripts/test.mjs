@@ -1,0 +1,2 @@
+import {build} from 'esbuild';import {mkdtemp,rm} from 'node:fs/promises';import {tmpdir} from 'node:os';import {join} from 'node:path';import {spawnSync} from 'node:child_process';
+const temporary=await mkdtemp(join(tmpdir(),'humanplus-tests-'));try{await build({entryPoints:['tests/core.test.ts'],bundle:true,platform:'node',format:'esm',outfile:join(temporary,'core.test.mjs')});const run=spawnSync(process.execPath,[join(temporary,'core.test.mjs')],{stdio:'inherit'});process.exitCode=run.status??1;}finally{await rm(temporary,{recursive:true,force:true});}
