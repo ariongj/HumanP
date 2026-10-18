@@ -6,11 +6,15 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: github-pages
-  cancel-in-progress: true
+  group: humanplus-build
+  cancel-in-progress: false
 jobs:
   build:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -25,16 +29,21 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist-pages
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - uses: actions/configure-pages@v5
-      - uses: actions/deploy-pages@v4
-        id: deployment
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: .pages-publish
+      - name: Update the Pages publishing branch
+        run: |
+          rsync -a --delete --exclude=.git --exclude=.github dist-pages/ .pages-publish/
+          touch .pages-publish/.nojekyll
+          printf '%s\n' "$GITHUB_SHA" > .pages-publish/SOURCE_COMMIT
+          git -C .pages-publish add --all
+          if ! git -C .pages-publish diff --cached --quiet; then
+            git -C .pages-publish -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m "Publish HumanPlus $GITHUB_SHA"
+            git -C .pages-publish push origin HEAD:gh-pages
+          fi
+      - name: Deploy from the authorized Pages branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run publish.yml --repo "$GITHUB_REPOSITORY" --ref gh-pages

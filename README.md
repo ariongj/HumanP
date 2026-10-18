@@ -13,7 +13,7 @@ node scripts/check-pages.mjs
 npm run preview:pages
 ```
 
-Requires Node >=22.13. The workflow `.github/workflows/pages.yml` builds, tests and publishes on pushes to `main`. The repository's Pages source must be configured as **GitHub Actions**. Its intended URL is `https://ariongj.github.io/HumanP/`; a workflow file alone does not enable the repository setting.
+Requires Node >=22.13. Live website: **https://ariongj.github.io/HumanP/**. Pages was enabled through the `gh-pages` publishing branch. The workflow `.github/workflows/pages.yml` tests/builds `main`, updates only public application assets on `gh-pages`, and dispatches `publish.yml` on that branch. Deployment therefore respects the repository’s Pages environment branch restriction. No additional account token or external hosting is required. The publishing workflow is present on both branches; changes to that workflow must be kept synchronized. `SOURCE_COMMIT` in the published build identifies the application source revision.
 
 The public site contains code, styles and content hashes only. Open the separate `.humanplus` package using the file picker. It is read and hash-verified entirely in the browser, remains in memory until refresh/close, and is never uploaded. The Pages content security policy disables fetch/XHR/network connections (`connect-src 'none'`). This is a local-data application hosted on a public site, not a server-authenticated private site. Original documents and filtered CSVs are downloaded from browser memory. External source links open only when selected.
 

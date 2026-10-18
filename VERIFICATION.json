@@ -58,9 +58,15 @@
   },
   "limits": [
     "Supplied snapshot only; no new live tender, medicine or licence verification.",
-    "Pages repository setting is required separately from the workflow.",
     "Monthly actuals absent until explicitly imported; public catalogue approval stays empty.",
     "No cross-device synchronization.",
     "The existing GPT Site is not updated by this GitHub build."
-  ]
+  ],
+  "publication": {
+    "url": "https://ariongj.github.io/HumanP/",
+    "branch": "gh-pages",
+    "live_http": 200,
+    "live_browser": "all 18 checks passed; no data network requests",
+    "private_data": "not published"
+  }
 }
