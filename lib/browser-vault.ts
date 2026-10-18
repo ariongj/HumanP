@@ -1,5 +1,6 @@
 import {readSavedVault,writeSavedVault,deleteSavedVault,type SavedVault} from './vault-storage';
 import manifest from './import-manifest.json';
+import {decryptPackage} from './encrypted-package';
 import {filterMarket,csv,marketColumns} from './domain';
 import {validateActuals} from './insights';
 const entries=manifest as Record<string,{sha256:string;bytes:number;contentType:string}>;
@@ -11,10 +12,11 @@ let currentPackage:SavedVault|null=null;
 let restoring:Promise<boolean>|null=null;
 let channel:BroadcastChannel|null=null;
 export const getVaultStatus=():VaultStatus=>({...status});
-export const isEmbeddedVault=()=>typeof document!=='undefined'&&document.documentElement.dataset.host==='portable';
+export const isProtectedVault=()=>typeof document!=='undefined'&&document.documentElement.dataset.host==='encrypted-pages';
+export const isEmbeddedVault=()=>typeof document!=='undefined'&&['portable','encrypted-pages'].includes(document.documentElement.dataset.host||'');
 const digest=async(bytes:BufferSource)=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))).map(x=>x.toString(16).padStart(2,'0')).join('');
 const fingerprint=()=>digest(new TextEncoder().encode(JSON.stringify(Object.entries(entries).sort(([a],[b])=>a.localeCompare(b)))));
-function listenForRemoval(){if(!channel&&typeof BroadcastChannel!=='undefined'){channel=new BroadcastChannel('humanplus-private-vault');channel.onmessage=e=>{if(e.data==='removed')location.reload();};}}
+function listenForRemoval(){if(!channel&&typeof BroadcastChannel!=='undefined'){channel=new BroadcastChannel('humanplus-private-vault');channel.onmessage=e=>{if(e.data==='removed'||e.data==='locked')location.reload();};}}
 function activate(verified:Map<string,Uint8Array<ArrayBuffer>>){for(const url of urls.values())URL.revokeObjectURL(url);urls=new Map();objects=verified;listenForRemoval();}
 async function remember(value:SavedVault){try{await writeSavedVault(value);status={state:'saved',fileName:value.fileName,savedAt:value.savedAt,bytes:value.blob.size};void navigator.storage?.persist?.().catch(()=>false);}catch{status={state:'temporary',fileName:value.fileName,bytes:value.blob.size,message:'Paneli është hapur, por shfletuesi nuk lejoi ruajtjen. Kjo kopje do të humbasë pas rifreskimit. Liro hapësirë ose lejo ruajtjen lokale dhe provo sërish.'};}finally{window.dispatchEvent(new Event('humanplus-vault-status'));}}
 export async function retrySavingVault(){if(currentPackage)await remember(currentPackage);return getVaultStatus();}
@@ -25,6 +27,7 @@ export async function restoreVault():Promise<boolean>{
  if(objects.size)return true;
  if(restoring)return restoring;
  restoring=(async()=>{status={state:'restoring'};try{
+  if(isProtectedVault()){status={state:'empty'};return false;}
   if(isEmbeddedVault()){
    const element=document.getElementById('humanplus-private-package');
    if(!element?.textContent)throw new Error('Kopja e plotë mungon nga ky skedar. Hape përsëri skedarin origjinal të panelit.');
@@ -39,7 +42,18 @@ export async function restoreVault():Promise<boolean>{
  }catch(error){status={state:'error',message:error instanceof Error?error.message:'Kopja lokale nuk mund të lexohej. Hape paketën një herë për ta rikthyer.'};return false;}})();return restoring;
 }
 
-export const isBrowserVault=()=>typeof window!=='undefined'&&['github-pages','portable'].includes(document.documentElement.dataset.host||'');
+export const isBrowserVault=()=>typeof window!=='undefined'&&['github-pages','portable','encrypted-pages'].includes(document.documentElement.dataset.host||'');
+export async function unlockProtectedBundle(username:string,password:string,onProgress:(n:number)=>void){
+ if(!isProtectedVault())throw new Error('Paneli nuk përdor hyrje me fjalëkalim.');
+ const element=document.getElementById('humanplus-encrypted-package');
+ if(!element?.textContent)throw new Error('Paketa e mbrojtur mungon. Rifresko faqen.');
+ let blob:Blob;
+ try{blob=await decryptPackage(JSON.parse(element.textContent),username,password);}catch{throw new Error('Emri i përdoruesit ose fjalëkalimi nuk është i saktë.');}
+ const verified=await verifyBundle(blob,onProgress);
+ activate(verified);currentPackage={version:1,fingerprint:await fingerprint(),fileName:'HumanPlus-Private-2026-10-18.humanplus',savedAt:'2026-10-18T00:00:00Z',blob};
+ status={state:'embedded',fileName:currentPackage.fileName,bytes:blob.size};
+}
+export function lockProtectedVault(){objects.clear();for(const url of urls.values())URL.revokeObjectURL(url);urls.clear();currentPackage=null;restoring=null;status={state:'empty'};channel?.postMessage('locked');location.reload();}
 const json=(value:unknown,status=200)=>new Response(JSON.stringify(value),{status,headers:{'Content-Type':'application/json'}});
 async function verifyBundle(file:Blob,onProgress:(n:number)=>void){
  if(file.size>80_000_000)throw new Error('Paketa e kompresuar është më e madhe se kufiri 80 MB.');

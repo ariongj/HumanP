@@ -1,0 +1,16 @@
+import {readFile,rm,mkdir,writeFile} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+import {spawnSync} from 'node:child_process';
+const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
+const approved=JSON.parse(await readFile('snapshots/publication.json','utf8'));
+const encrypted=await readFile(approved.path,'utf8');
+if(sha(encrypted)!==approved.sha256)throw new Error('Encrypted snapshot does not match publication manifest');
+const result=spawnSync('npm',['run','build:portable'],{stdio:'inherit'});
+if(result.error)throw result.error;if(result.status!==0)process.exit(result.status??1);
+const script=(await readFile('dist-portable/humanplus.js','utf8')).replaceAll('</script','<\\/script');
+const style=(await readFile('dist-portable/humanplus.css','utf8')).replaceAll('</style','<\\/style');
+const scriptHash=createHash('sha256').update(script).digest('base64');
+const csp=`default-src 'none'; script-src 'sha256-${scriptHash}'; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'`;
+const html=`<!doctype html><html lang="sq" data-host="encrypted-pages"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><meta http-equiv="Content-Security-Policy" content="${csp}"><title>HumanPlus · Paneli i menaxhimit</title><style>${style}</style></head><body><div id="root"></div><noscript>Aktivizo JavaScript për të hapur HumanPlus.</noscript><script id="humanplus-encrypted-package" type="application/json">${encrypted}</script><script>${script}</script></body></html>`;
+await rm('dist-pages',{recursive:true,force:true});await mkdir('dist-pages',{recursive:true});await writeFile('dist-pages/index.html',html);
+console.log('Built the complete encrypted panel. No credentials or plaintext package included.');

@@ -2,9 +2,17 @@
 
 Albanian management and research workspace with procurement, medical notices, medicines, product references, licensed operators, tender readiness, budgets, financial scenarios, partners, catalogue review and original documents. The current publishing target is **GitHub Pages**, with application source in `ariongj/HumanP`.
 
-## Complete private presentation panel
+## Ready-to-use password-protected panel
 
-`HumanPlus-Presentation-Ready.html` is the private, ready-to-open edition. It embeds the entire reviewed package: all 17 datasets and 218 original documents. Open the HTML directly in a current browser; no server, package picker, previous storage, login, or network request is needed. Each opening verifies the 235 source hashes. The HTML remains outside this public repository and must not be placed in Pages assets under the source-only publishing policy.
+Open **https://ariongj.github.io/HumanP/** and sign in. The complete supplied package is already included, encrypted: all 17 datasets and 218 original documents load automatically after login. There is no package picker or import step. Each opening verifies all 235 object hashes. Logout clears the unlocked data and locks other open tabs; a page reload requires login again. Credentials are delivered separately and are never committed.
+
+The static GitHub site uses a strong generated credential to derive an AES-256-GCM decryption key with PBKDF2-SHA256 (600,000 iterations, random salt and IV). This protects the data itself, rather than merely hiding the interface. It is a single shared credential, not a server account system with individual users or remote revocation. The public repository holds only the encrypted snapshot and application code. Browser drafts and subsequently entered actuals stay in the browser profile; they are not uploaded.
+
+The cryptographic APIs follow the [Web Crypto key derivation](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/deriveKey) and [AES-GCM parameter](https://developer.mozilla.org/en-US/docs/Web/API/AesGcmParams) documentation.
+
+## Offline presentation copy
+
+`HumanPlus-Presentation-Ready.html` is the private, ready-to-open edition. It embeds the entire reviewed package: all 17 datasets and 218 original documents. Open the HTML directly in a current browser; no server, package picker, previous storage, login, or network request is needed. Each opening verifies the 235 source hashes. This unencrypted offline HTML stays outside the public repository. GitHub Pages publishes only the password-encrypted edition.
 
 ```bash
 npm run build:portable
@@ -30,15 +38,17 @@ node scripts/check-pages.mjs
 npm run preview:pages
 ```
 
-Requires Node >=22.13. Live website: **https://ariongj.github.io/HumanP/**. Pages was enabled through the `gh-pages` publishing branch. The workflow `.github/workflows/pages.yml` tests/builds `main`, updates only public application assets on `gh-pages`, and dispatches `publish.yml` on that branch. Deployment therefore respects the repository’s Pages environment branch restriction. No additional account token or external hosting is required. The publishing workflow is present on both branches; changes to that workflow must be kept synchronized. `SOURCE_COMMIT` in the published build identifies the application source revision.
+Requires Node >=22.13. Live website: **https://ariongj.github.io/HumanP/**. Pages was enabled through the `gh-pages` publishing branch. The workflow `.github/workflows/pages.yml` tests/builds `main`, updates the protected HTML on `gh-pages`, and dispatches `publish.yml` on that branch. Deployment therefore respects the repository’s Pages environment branch restriction. No additional account token or external hosting is required. The publishing workflow is present on both branches; changes to that workflow must be kept synchronized. `SOURCE_COMMIT` in the published build identifies the application source revision.
 
-The public site contains code, styles and content hashes only. Open the separate `.humanplus` package using the file picker. It is read and hash-verified entirely in the browser, then saved atomically as a compressed Blob in IndexedDB. All 17 datasets and 218 documents reopen automatically after refresh, a new tab, or a browser restart. The package is never uploaded. Each startup checks the manifest fingerprint and verifies every object hash before showing the panel. The Pages content security policy disables fetch/XHR/network connections (`connect-src 'none'`). This is a local-data application hosted on a public site, not a server-authenticated private site. Original documents and filtered CSVs are downloaded from browser memory. External source links open only when selected.
+The build reads `snapshots/publication.json`, checks the encrypted snapshot hash, builds the application, and embeds the ciphertext into one HTML file. The password is not needed by CI and is absent from the deployment. The Pages content security policy allows only the exact compiled script hash and disables fetch/XHR (`connect-src 'none'`). After successful decryption, the browser verifies every source object before showing the panel. Original documents and filtered CSVs download from browser memory.
 
-Scenario drafts, saved filters, review notes, tender checklists and imported monthly actuals use browser-local storage. Export backups before clearing storage or changing devices. “Ruajtja e të dhënave” opens storage controls, including a downloadable backup of the full package. “Fshi të dhënat lokale dhe mbyll” clears the saved package, drafts and actuals and closes other open HumanPlus tabs to the setup screen. A shared browser profile shares the saved sources as well as drafts. There is no cross-device sync or GitHub authentication for the dataset. Initial setup is once per browser/profile; the earlier in-memory release cannot supply a persistent copy after it has closed. Browser data clearing or eviction requires restoring the package. Storage failures are visible and leave the current session usable; retry saving from Connections. An incompatible or damaged saved package is rejected without silently using it or deleting drafts.
+Scenario drafts, saved filters, review notes, tender checklists and entered monthly actuals use browser-local storage. Export backups before clearing storage or changing devices. The supplied dataset needs no browser storage to load, including in a new browser. Connections offers a data backup after login. Logging out requires credentials to reopen the panel; saved drafts remain in the same browser profile.
+
+To replace or rotate the encrypted snapshot, run `scripts/encrypt-snapshot.py` against the verified private package with a credentials JSON file **outside the checkout**, then update the digest in `snapshots/publication.json`. Use a fresh generated password of at least 24 characters. Never put credentials, decryption keys, or the plaintext package in GitHub. Previously downloaded copies remain usable with their original credential.
 
 ## Private data preparation
 
-Keep attachments, extracted sources, staged objects, screenshots and packages **outside this checkout**. Never commit them or copy them into `public`, `dist-pages`, workflow artifacts or releases.
+Keep attachments, extracted sources, staged objects, screenshots, credentials and plaintext packages **outside this checkout**. Only the explicitly prepared encrypted snapshot belongs in `snapshots`; never copy plaintext into `public`, `dist-pages`, workflow artifacts or releases.
 
 ```bash
 python3 scripts/prepare-bundle.py \
@@ -69,13 +79,15 @@ The original advanced procurement filters, saved views, three-record comparison,
 
 The tender model follows the supplied workbook: five weighted criteria, five mandatory confirmation gates, a proposed 70-point threshold and separate contribution/liquidity formulas. An unknown gate stops the result. Collateral is a liquidity need, not an expense. Missing cash inputs stay unknown. Results are proposed management judgments, not authorization to bid.
 
-Monthly finance scenarios retain 39 periods and three source cases, the partial October fraction, delayed collections and unknown values. Actuals are only populated through explicit CSV import; no real financial performance is invented. In Pages, confirmed imports stay in the current browser.
+Monthly finance scenarios retain 39 periods and three source cases, the partial October fraction, delayed collections and unknown values. Actuals are only populated through explicit manual entry or CSV import; no real financial performance is invented. In Pages, confirmed imports stay in the current browser.
 
 ## Verification
 
-`npm test` runs 25 synthetic calculation, filter, source-link and API-contract tests. When the original private workbook JSON exists in the sibling private bundle, an independent allowlisted evaluator checks all 39 periods in all three scenarios against workbook formulas. That one test is explicitly skipped on public CI, where the private source is absent.
+`npm test` runs 26 synthetic calculation, filter, source-link, API-contract and authenticated-decryption tests. When the original private workbook JSON exists in the sibling private bundle, an independent allowlisted evaluator checks all 39 periods in all three scenarios against workbook formulas. That one test is explicitly skipped on public CI, where the private source is absent.
 
-`tests/pages_browser_qa.py` requires Playwright/Chromium and the separately prepared private package. It checks invalid-package rejection, real-data import, counts, exports, linked evidence, local actuals, original XLSX downloads, persisted drafts, the original 15 modules, 320px layouts and the absence of data network requests. `tests/vault_persistence_qa.py` additionally closes and restarts Chromium with the same profile, verifies byte-identical package/document backups, rejects stale snapshots, simulates unavailable storage and successful retry, and checks explicit deletion across tabs. `tests/presentation_browser_qa.py` opens the complete HTML directly from disk in clean profiles with networking blocked and IndexedDB unavailable; it verifies source reconciliation, linked evidence, all five chapters at 320px, editable scenarios, manual actuals, and original document hashes. Screenshots and receipts are written outside the repository. `scripts/check-pages.mjs` checks the public build's file types, relative asset paths and network policy; local source-canary verification complements it.
+`tests/protected_panel_browser_qa.py` checks the deployed password-protected edition with a fresh browser: wrong credentials rejected, correct credentials open every dataset without import, linked evidence, five chapters at 320px, editable scenarios, manual actuals, hash-matched original documents, reload and logout. Set `PANEL_URL` for a live HTTPS check. Credentials and expected source data are read from local files outside the repository. `scripts/check-pages.mjs` checks the encrypted snapshot digest, envelope, exact script hash, no plaintext package and no external dependencies. Screenshots and test receipts stay outside the repository.
+
+`tests/presentation_browser_qa.py` retains coverage for the private offline HTML. `tests/pages_browser_qa.py` and `tests/vault_persistence_qa.py` cover the older import-based build available through `npm run build:import`; this is not the current Pages deployment.
 
 ## Retained server adapter
 

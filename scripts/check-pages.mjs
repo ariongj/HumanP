@@ -1,4 +1,24 @@
-import {readdir,readFile} from 'node:fs/promises';import {join} from 'node:path';import assert from 'node:assert/strict';
-async function files(dir){return (await Promise.all((await readdir(dir,{withFileTypes:true})).map(e=>e.isDirectory()?files(join(dir,e.name)):[join(dir,e.name)]))).flat();}
-const paths=await files('dist-pages');for(const p of paths){assert(!/\.(xlsx|docx|pdf|csv|zip|humanplus|json)$/.test(p),'Private data file in Pages build: '+p);if(/\.(js|html|css)$/.test(p)){const s=await readFile(p,'utf8');assert(!s.includes('siwc_bypass_bearer_token'));assert(!s.includes('supplier_business_email":"'));}}
-const html=await readFile('dist-pages/index.html','utf8');assert(html.includes("connect-src 'none'"));assert(!html.includes('src="/assets/'));console.log('Pages build checked: relative assets, network disabled, no private data files.');
+import {readdir,readFile} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+import assert from 'node:assert/strict';
+const approved=JSON.parse(await readFile('snapshots/publication.json','utf8'));
+assert.deepEqual(await readdir('dist-pages'),['index.html'],'Only the protected panel belongs in the deployment');
+const html=await readFile('dist-pages/index.html','utf8');
+assert(html.includes('data-host="encrypted-pages"'));
+assert(html.includes("connect-src 'none'"));
+assert(!html.includes('siwc_bypass_bearer_token'));
+assert(!html.includes('supplier_business_email":"'));
+assert(!/<(?:script|link|iframe)\b[^>]*(?:src|href)=/i.test(html),'No external dependencies');
+assert(!/<script id="humanplus-private-package"/.test(html),'Plaintext package must not be embedded');
+const match=html.match(/<script id="humanplus-encrypted-package" type="application\/json">([\s\S]*?)<\/script>/);
+assert(match,'Encrypted package must be embedded');
+assert.equal(createHash('sha256').update(match[1]).digest('hex'),approved.sha256);
+assert.equal(Buffer.byteLength(match[1]),approved.bytes);
+const envelope=JSON.parse(match[1]);
+assert.deepEqual(Object.keys(envelope).sort(),['ciphertext','format','iterations','iv','kdf','salt']);
+assert.equal(envelope.format,'humanplus-encrypted-v1');assert.equal(envelope.kdf,'PBKDF2-SHA256');assert.equal(envelope.iterations,600000);
+assert.equal(Buffer.from(envelope.salt,'base64').length,16);assert.equal(Buffer.from(envelope.iv,'base64').length,12);
+assert(Buffer.from(envelope.ciphertext,'base64').length>16);
+const scripts=[...html.matchAll(/<script>([\s\S]*?)<\/script>/g)];assert.equal(scripts.length,1);
+assert(html.includes("script-src 'sha256-"+createHash('sha256').update(scripts[0][1]).digest('base64')+"'"));
+console.log(`Pages checked: complete encrypted snapshot, ${approved.datasets} datasets, ${approved.documents} documents, exact script hash, no plaintext package or external data requests.`);

@@ -1,4 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {readFileSync,existsSync} from 'node:fs';import {resolve} from 'node:path';
+import './encrypted-package.test';
 import {filterMarket,marketSummary,groupMarket,csv,safeLink} from '../lib/domain';
 import {project,emptyPlan,scenarios,months,validatePlan,isPlan,businessModel,emptyBusiness} from '../lib/finance';
 import {privateApi} from '../lib/private-api';import manifest from '../lib/import-manifest.json';

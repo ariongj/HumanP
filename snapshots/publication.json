@@ -1,0 +1,10 @@
+{
+  "path": "snapshots/humanplus-2026-10-18.encrypted.json",
+  "sha256": "99ee20acfd83e4fb14bdd19ea01412663d2c29aaf93c040d3980ffb1505d9389",
+  "bytes": 31373423,
+  "sourceDate": "2026-10-18",
+  "datasets": 17,
+  "documents": 218,
+  "objects": 235,
+  "access": "Password-encrypted complete snapshot; credentials and plaintext stay outside GitHub."
+}

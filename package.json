@@ -15,9 +15,10 @@
     "test": "node scripts/test.mjs",
     "typecheck": "tsc --noEmit",
     "check:privacy": "node scripts/security-check.mjs",
-    "build:pages": "vite build --config vite.pages.config.ts",
+    "build:pages": "node scripts/build-pages.mjs",
     "build:portable": "vite build --config vite.portable.config.ts",
-    "preview:pages": "vite preview --config vite.pages.config.ts"
+    "preview:pages": "vite preview --config vite.pages.config.ts",
+    "build:import": "vite build --config vite.pages.config.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
