@@ -1,6 +1,6 @@
 # Udhëzuesi i operatorit — HumanPlus
 
-Në versionin GitHub Pages, kliko **Hap paketën .humanplus** dhe zgjidh paketën private të 18 tetorit 2026. Leximi bëhet në këtë pajisje; skedari nuk ngarkohet në GitHub. Pas rifreskimit duhet ta hapësh përsëri paketën. Draftet dhe rezultatet e importuara mbeten në shfletues. Në një pajisje të përbashkët përdor **Lidhjet e të dhënave → Fshi të dhënat lokale dhe mbyll** pasi të kesh eksportuar kopjet.
+Në versionin GitHub Pages, kliko **Hap dhe ruaj paketën .humanplus** dhe zgjidh paketën private të 18 tetorit 2026. Leximi bëhet në këtë pajisje; skedari nuk ngarkohet në GitHub. Këtë e bën vetëm një herë për këtë shfletues. Të 17 grupet e të dhënave dhe 218 dokumentet ruhen dhe hapen automatikisht pas rifreskimit, në një skedë të re dhe pas rihapjes së shfletuesit. Draftet dhe rezultatet e importuara mbeten gjithashtu në shfletues. Kopja e vjetër që mbahej vetëm në kujtesë duhet hapur një herë në versionin e ri. Në një pajisje të përbashkët përdor **Lidhjet e të dhënave → Fshi të dhënat lokale dhe mbyll** pasi të kesh eksportuar kopjet.
 
 1. **Përmbledhja:** zgjidh vitin e kërkimit. Rekordet e prokurimit dhe ndarjet buxhetore nuk janë të ardhura të HumanPlus.
 2. **Harta e prokurimit:** përdor kërkimin, vitin, monedhën dhe filtrat shtesë. Grafiku, tabela dhe eksporti përdorin të njëjtën përzgjedhje. Hap ikonën e burimit për ID, shumën origjinale, lidhjen dhe korrigjimet. Kandidatët për dublikatë nuk hiqen.
@@ -47,3 +47,7 @@ Për raporte të plota të filtrave përdor eksportin CSV. Printimi pasqyron faq
 - **Markat dhe produktet:** 11 referenca të rakorduara nga skedarët e rinj. Marka/modeli në një tender mund të përshkruajë pajisjen ekzistuese ose një kërkesë. Vlera e prokurimit nuk është çmimi për njësi.
 - **Gatishmëria për tender:** notat 0–5 dhe pesha e tyre prodhojnë një rezultat për shqyrtim. Të pesë kushtet duhen konfirmuar; e panjohura nuk kalon. Dosja ka 16 kontrolle me shënime lokale. Te kostot, kolaterali ndikon likuiditetin por nuk zbritet si kosto e pakthyeshme. Hyrjet bosh mbeten të panjohura.
 - Eksporto pamjen për të marrë të gjithë popullatën e filtruar, pavarësisht faqes ose kolonave të dukshme. Eksporto draftin e tenderit për kopje rezervë. Burimet e reja nuk ndryshojnë miratimet klinike ose publikimin e katalogut.
+
+## Hapja automatike
+
+Te **Lidhjet e të dhënave → Ruajtja dhe kopja rezervë**, statusi **Hapje automatike aktive** konfirmon ruajtjen e plotë. Mund të shkarkosh paketën e ruajtur si kopje rezervë. Nëse ruajtja nuk lejohet ose mungon hapësira, paneli e shfaq gabimin; përdor **Riprovo ruajtjen automatike** pasi ta rregullosh. Pas pastrimit të të dhënave të shfletuesit ose në një pajisje tjetër, hape sërish paketën për konfigurimin fillestar.

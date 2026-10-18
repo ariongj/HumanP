@@ -18,7 +18,10 @@
     },
     "overlayGroups": 11,
     "overlayAffectedRecords": 445,
-    "publicApproved": 0
+    "publicApproved": 0,
+    "canonical_datasets": 17,
+    "original_documents": 218,
+    "earlier_bundle_coverage": "all 17 October source-data files retained byte-identically in expanded bundle; common metadata updated"
   },
   "tests": {
     "unit_and_contract_tests": 23,
@@ -36,7 +39,7 @@
         "130 pharmaceutical licence rows",
         "11 product references without duplicate merge",
         "tender gates and cash workbook scenarios",
-        "local draft survives reload with reimport",
+        "all private data and drafts restore automatically after reload",
         "market export uses same filters",
         "global medicine search navigates",
         "original XLSX downloads",
@@ -48,12 +51,29 @@
       ],
       "uncaughtErrors": [],
       "requests": 30
+    },
+    "persistent_browser": {
+      "checks": [
+        "all 17 datasets saved; entire private package backup byte-identical",
+        "refresh restores automatically without file selection",
+        "new tab restores automatically",
+        "full browser process restart restores all data",
+        "original document SHA-256 matches after browser restart",
+        "incompatible saved package does not load; drafts retained",
+        "mismatch recovery succeeded",
+        "storage failure is visible; retry saves and clears temporary warning",
+        "explicit removal clears package and drafts across tabs and restart",
+        "no data network requests; no uncaught browser errors"
+      ],
+      "uncaughtErrors": [],
+      "dataNetworkRequests": [],
+      "engine": "Chromium Headless Shell 1243"
     }
   },
   "privacy": {
     "public_repository": "application source and hashes only",
-    "private_package": "separate; local browser import; no network upload",
-    "browser_sources": "memory until reload",
+    "private_package": "separate; one initial browser import; no network upload",
+    "browser_sources": "compressed private package persisted in IndexedDB; automatically restored and hash-verified on startup",
     "drafts_and_imported_actuals": "browser localStorage; explicit clearing available"
   },
   "limits": [
@@ -65,8 +85,7 @@
   "publication": {
     "url": "https://ariongj.github.io/HumanP/",
     "branch": "gh-pages",
-    "live_http": 200,
-    "live_browser": "all 18 checks passed; no data network requests",
-    "private_data": "not published"
+    "private_data": "not published",
+    "verification_method": "Match published SOURCE_COMMIT to source revision and smoke-check the live panel after deployment."
   }
 }

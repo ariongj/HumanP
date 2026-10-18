@@ -1,12 +1,37 @@
+import {readSavedVault,writeSavedVault,deleteSavedVault,type SavedVault} from './vault-storage';
 import manifest from './import-manifest.json';
 import {filterMarket,csv,marketColumns} from './domain';
 import {validateActuals} from './insights';
 const entries=manifest as Record<string,{sha256:string;bytes:number;contentType:string}>;
 let objects=new Map<string,Uint8Array<ArrayBuffer>>();
 let urls=new Map<string,string>();
+export type VaultStatus={state:'empty'|'restoring'|'saved'|'temporary'|'error';message?:string;fileName?:string;savedAt?:string;bytes?:number};
+let status:VaultStatus={state:'empty'};
+let currentPackage:SavedVault|null=null;
+let restoring:Promise<boolean>|null=null;
+let channel:BroadcastChannel|null=null;
+export const getVaultStatus=():VaultStatus=>({...status});
+const digest=async(bytes:BufferSource)=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))).map(x=>x.toString(16).padStart(2,'0')).join('');
+const fingerprint=()=>digest(new TextEncoder().encode(JSON.stringify(Object.entries(entries).sort(([a],[b])=>a.localeCompare(b)))));
+function listenForRemoval(){if(!channel&&typeof BroadcastChannel!=='undefined'){channel=new BroadcastChannel('humanplus-private-vault');channel.onmessage=e=>{if(e.data==='removed')location.reload();};}}
+function activate(verified:Map<string,Uint8Array<ArrayBuffer>>){for(const url of urls.values())URL.revokeObjectURL(url);urls=new Map();objects=verified;listenForRemoval();}
+async function remember(value:SavedVault){try{await writeSavedVault(value);status={state:'saved',fileName:value.fileName,savedAt:value.savedAt,bytes:value.blob.size};void navigator.storage?.persist?.().catch(()=>false);}catch{status={state:'temporary',fileName:value.fileName,bytes:value.blob.size,message:'Paneli është hapur, por shfletuesi nuk lejoi ruajtjen. Kjo kopje do të humbasë pas rifreskimit. Liro hapësirë ose lejo ruajtjen lokale dhe provo sërish.'};}finally{window.dispatchEvent(new Event('humanplus-vault-status'));}}
+export async function retrySavingVault(){if(currentPackage)await remember(currentPackage);return getVaultStatus();}
+export async function forgetVault(){await deleteSavedVault();objects.clear();for(const url of urls.values())URL.revokeObjectURL(url);urls.clear();currentPackage=null;restoring=null;status={state:'empty'};channel?.postMessage('removed');}
+export async function savedPackageBlob(){return currentPackage;}
+export async function restoreVault():Promise<boolean>{
+ listenForRemoval();
+ if(objects.size)return true;
+ if(restoring)return restoring;
+ restoring=(async()=>{status={state:'restoring'};try{const saved=await readSavedVault();if(!saved){status={state:'empty'};return false;}
+  if(saved.version!==1||!(saved.blob instanceof Blob)||saved.fingerprint!==await fingerprint())throw new Error('Kopja e ruajtur i përket një pakete tjetër. Hap paketën për këtë version; draftet e tua ruhen.');
+  const verified=await verifyBundle(saved.blob,()=>{});activate(verified);currentPackage=saved;status={state:'saved',fileName:saved.fileName,savedAt:saved.savedAt,bytes:saved.blob.size};return true;
+ }catch(error){status={state:'error',message:error instanceof Error?error.message:'Kopja lokale nuk mund të lexohej. Hape paketën një herë për ta rikthyer.'};return false;}})();return restoring;
+}
+
 export const isBrowserVault=()=>typeof window!=='undefined'&&document.documentElement.dataset.host==='github-pages';
 const json=(value:unknown,status=200)=>new Response(JSON.stringify(value),{status,headers:{'Content-Type':'application/json'}});
-export async function unlockBundle(file:File,onProgress:(n:number)=>void){
+async function verifyBundle(file:Blob,onProgress:(n:number)=>void){
  if(file.size>80_000_000)throw new Error('Paketa e kompresuar është më e madhe se kufiri 80 MB.');
  const stream=file.stream().pipeThrough(new DecompressionStream('gzip'));const reader=stream.getReader();const chunks:Uint8Array[]=[];let length=0;const expected=Object.values(entries).reduce((s,e)=>s+e.bytes,0);const limit=Math.ceil(expected*1.36)+1_000_000;
  while(true){const {done,value}=await reader.read();if(done)break;length+=value.length;if(length>limit){await reader.cancel();throw new Error('Madhësia e paketës nuk përputhet.');}chunks.push(value);}
@@ -19,12 +44,16 @@ export async function unlockBundle(file:File,onProgress:(n:number)=>void){
   const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))).map(x=>x.toString(16).padStart(2,'0')).join('');if(hash!==item.sha256)throw new Error('Përmbajtja nuk përputhet: '+key);
   verified.set(key,bytes);onProgress(Math.round(++count/Object.keys(entries).length*100));
  }
- for(const url of urls.values())URL.revokeObjectURL(url);urls=new Map();objects=verified;
+ return verified;
+}
+export async function unlockBundle(file:File,onProgress:(n:number)=>void){
+ const verified=await verifyBundle(file,onProgress);const value:SavedVault={version:1,fingerprint:await fingerprint(),fileName:file.name,savedAt:new Date().toISOString(),blob:file};
+ activate(verified);currentPackage=value;await remember(value);return getVaultStatus();
 }
 export function vaultDocumentURL(key:string){if(!isBrowserVault())return '/api/'+key;if(urls.has(key))return urls.get(key)!;const data=objects.get(key);if(!data)return '#';const url=URL.createObjectURL(new Blob([data],{type:entries[key].contentType}));urls.set(key,url);return url;}
 export async function appFetch(path:string,options?:RequestInit):Promise<Response>{
  if(!isBrowserVault())return fetch(path,options);
- if(path==='/api/session')return json({authorized:objects.size>0},objects.size?200:401);
+ if(path==='/api/session'){const ready=await restoreVault();return json({authorized:ready},ready?200:401);}
  if(path==='/api/public-content')return json({approvedItems:[]});
  if(!objects.size)return json({error:'Hap paketën private në këtë shfletues.'},401);
  if(path==='/api/connections')return json({checkedAt:new Date().toISOString(),sourceDate:'2026-10-18',sources:Object.entries(entries).filter(([key])=>key.startsWith('data/')).map(([key,item])=>({name:key.slice(5,-5),bytes:item.bytes,available:objects.has(key)})),external:{status:'not_configured'}});
