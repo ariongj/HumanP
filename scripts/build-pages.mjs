@@ -3,7 +3,12 @@ import {createHash} from 'node:crypto';
 import {spawnSync} from 'node:child_process';
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
 const approved=JSON.parse(await readFile('snapshots/publication.json','utf8'));
-const encrypted=await readFile(approved.path,'utf8');
+const chunks=await Promise.all((approved.parts||[{path:approved.path}]).map(async part=>{
+ const bytes=await readFile(part.path);
+ if(part.sha256&&(sha(bytes)!==part.sha256||bytes.length!==part.bytes))throw new Error('Encrypted part does not match publication manifest: '+part.path);
+ return bytes;
+}));
+const encrypted=Buffer.concat(chunks).toString('utf8');
 if(sha(encrypted)!==approved.sha256)throw new Error('Encrypted snapshot does not match publication manifest');
 const result=spawnSync('npm',['run','build:portable'],{stdio:'inherit'});
 if(result.error)throw result.error;if(result.status!==0)process.exit(result.status??1);

@@ -2,10 +2,10 @@
 
 ## Paneli i plotë pa import
 
-Hap **https://ariongj.github.io/HumanP/**. Shkruaj përdoruesin dhe fjalëkalimin që ke marrë veçmas. Të gjitha 17 grupet e të dhënave dhe 220 dokumentet hapen automatikisht pas hyrjes; nuk importon asgjë. Burimet në GitHub janë të enkriptuara. **Dil dhe kyç panelin** mbyll qasjen edhe në skedat e tjera. Pas rifreskimit hyn sërish me fjalëkalim.
+Hap **https://ariongj.github.io/HumanP/**. Shkruaj përdoruesin dhe fjalëkalimin që ke marrë veçmas. Të gjitha 17 grupet e të dhënave dhe 356 dokumentet hapen automatikisht pas hyrjes; nuk importon asgjë. Burimet në GitHub janë të enkriptuara. **Dil dhe kyç panelin** mbyll qasjen edhe në skedat e tjera. Pas rifreskimit hyn sërish me fjalëkalim.
 
 Kopja lokale **HumanPlus-Presentation-Ready.html** është versioni i veçantë pa enkriptim; mbaje privatisht.
-- **Prezantimi HumanPlus:** pesë kapituj me grafiqe, gjetje të llogaritura nga burimet dhe lidhje me evidencën. **Nis prezantimin** fsheh menunë; shigjetat ndërrojnë kapitullin dhe Esc kthen panelin.
+- **Prezantimi HumanPlus:** gjashtë kapituj me grafiqe, gjetje të llogaritura nga burimet dhe lidhje me evidencën. **Nis prezantimin** fsheh menunë; shigjetat ndërrojnë kapitullin dhe Esc kthen panelin.
 - **Skenari i drejtimit:** ndrysho volumin, çmimin, koston për shërbim dhe kostot fikse. Rezultatet janë skenar, jo shitje faktike. Hyrjet bosh mbeten të panjohura.
 - **Lidhjet e të dhënave:** shkruaj muajin dhe totalet drejtpërdrejt, pa CSV. **Shqyrto muajin** paraqet grupin për konfirmim; muajt e tjerë ruhen.
 - **Eksporto briefin:** ruan filtrat, ID-të e njoftimeve, gjetjet, supozimet dhe referencat e dokumenteve. Draftet dhe rezultatet e reja ruhen lokalisht; nuk shtohen automatikisht në skedarin HTML origjinal.
@@ -63,8 +63,12 @@ Te **Lidhjet e të dhënave → Ruajtja dhe kopja rezervë**, statusi **Të gjit
 
 ## Prokurimi 2024
 
-- Zgjidh **2024** në përmbledhje, historikun e prezantimit ose hartën e prokurimit: 1,773 regjistrime shpërblimi, 1,163 procedura dhe 12 muaj. Grafiqet, filtrat dhe eksporti përdorin të njëjtat rekorde.
+- Zgjidh **2024** në përmbledhje, historikun e prezantimit ose hartën e prokurimit: 1,781 regjistrime shpërblimi dhe konteksti dhe 12 muaj. Grafiqet, filtrat dhe eksporti përdorin të njëjtat rekorde.
 - **Muaji i prokurimit** ngushton vitin; klikimi i muajit në prezantim hap regjistrin e filtruar. Klikimi i kategorisë ose institucionit ruan vitin. **Pastro** rikthen të gjitha vitet.
 - Burimi është arkivi KRPP / OCP i marrë nga OCP më 08.03.2026. Përfshihen blerës shëndetësorë, blerje mbështetëse dhe kandidatë mjekësorë/laboratorikë; nuk është total kombëtar ose vlerë pagesash. Klasifikimet e reja tekstuale kërkojnë shqyrtim.
 - Te **Dokumentet dhe burimet**, kërko **2024** për skedarin e procedurave dhe raportin e metodës. Çdo rekord ka ID shpërblimi, ID procedure dhe gjurmë burimore.
-- **Buxheti 2024** mbetet pa burim; nuk plotësohet me zero ose me shumat e prokurimit.
+- **Buxheti 2024** është përfshirë: 263,660,768 EUR ndarje qendrore dhe 98,801,349 EUR ndarje shëndetësore në 38 komuna. Te **Buxhetet publike**, viti ruhet kur kalon mes programeve, granteve, projekteve dhe pagesave. Kliko grafikun për të filtruar tabelën dhe eksportin.
+- **Pagesat · Thesari** dhe **Pagesat · auditimi** kanë mbulim të ndryshëm; mos i mblidh bashkë. Nivelet prind/nënprogram dhe lista kapitale/kandidatët e kontekstit paraqiten veçmas.
+- **Popullata e prokurimit → KRPP 2024 · të gjithë sektorët** hap 10,701 shpërblime unike të arkivit kombëtar. Nuk i shtohen popullatës së shëndetësisë.
+- Te **Dokumentet dhe burimet**, 356 dokumente përfshijnë të dy arkivat e reja. **Eksploro tabelat** hap JSON/CSV me kërkim, grupim, filtra dhe eksport. Dokumentet origjinale shkarkohen pa ndryshime.
+- Kapitulli **Buxheti dhe pagesat** në prezantim lidhet me të njëjtat vite, burime dhe shifra.

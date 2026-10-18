@@ -1,5 +1,5 @@
+import {decodeBase64 as decode} from './base64';
 export type EncryptedPackage={format:'humanplus-encrypted-v1';kdf:'PBKDF2-SHA256';iterations:number;salt:string;iv:string;ciphertext:string};
-const decode=(value:string)=>Uint8Array.from(atob(value),c=>c.charCodeAt(0));
 export async function decryptPackage(envelope:EncryptedPackage,username:string,password:string):Promise<Blob>{
  if(envelope.format!=='humanplus-encrypted-v1'||envelope.kdf!=='PBKDF2-SHA256'||envelope.iterations!==600000)throw new Error('Invalid encrypted package');
  const salt=decode(envelope.salt),iv=decode(envelope.iv);

@@ -65,3 +65,5 @@ next-env.d.ts
 /dist-pages/
 /dist-portable/
 *.humanplus
+
+__pycache__/

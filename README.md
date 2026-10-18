@@ -4,7 +4,7 @@ Albanian management and research workspace with procurement, medical notices, me
 
 ## Ready-to-use password-protected panel
 
-Open **https://ariongj.github.io/HumanP/** and sign in. The complete supplied package is already included, encrypted: all 17 datasets, 218 original documents and two 2024 recovery source files load automatically after login. There is no package picker or import step. Each opening verifies all 237 object hashes. Logout clears the unlocked data and locks other open tabs; a page reload requires login again. Credentials are delivered separately and are never committed.
+Open **https://ariongj.github.io/HumanP/** and sign in. The complete supplied package is already included, encrypted: all 17 datasets and 356 source documents load automatically after login. There is no package picker or import step. Each opening verifies all 373 object hashes. Logout clears the unlocked data and locks other open tabs; a page reload requires login again. Credentials are delivered separately and are never committed.
 
 The static GitHub site uses a strong generated credential to derive an AES-256-GCM decryption key with PBKDF2-SHA256 (600,000 iterations, random salt and IV). This protects the data itself, rather than merely hiding the interface. It is a single shared credential, not a server account system with individual users or remote revocation. The public repository holds only the encrypted snapshot and application code. Browser drafts and subsequently entered actuals stay in the browser profile; they are not uploaded.
 
@@ -23,7 +23,7 @@ python3 scripts/package-presentation.py \
 
 The packager rejects output inside the application checkout. It verifies the full package before embedding it, generates an IIFE for file URLs, and allows only its exact inline script hash under a network-disabled content security policy. `dist-portable` contains application code only and is ignored. The final private HTML contains the full data and should be shared only with the intended audience.
 
-The presentation opens with medical evidence and includes five chapters: medical notices, historical procurement, the research ecosystem, editable monthly scenarios, and sources/actions. Presentation mode hides application navigation, supports chapter controls and Escape, and retains the source drill-downs. Filters, findings, CSV and brief exports use the same selected records. Notice and procedure counts remain distinct; partial coverage and missing financial actuals remain explicit. The simple editable scenario is not an approved forecast or cash model. Its assumptions persist locally when storage is available. Use the full financial module for the 39-month model.
+The presentation opens with medical evidence and includes six chapters: medical notices, historical procurement, the research ecosystem, editable monthly scenarios, sources/actions, and public budgets/payments. Presentation mode hides application navigation, supports chapter controls and Escape, and retains the source drill-downs. Filters, findings, CSV and brief exports use the same selected records. Notice and procedure counts remain distinct; partial coverage and missing financial actuals remain explicit. The simple editable scenario is not an approved forecast or cash model. Its assumptions persist locally when storage is available. Use the full financial module for the 39-month model.
 
 Connections also supports direct monthly actuals entry without CSV. The user provides month, three reconciled totals and a source reference, reviews the merged dataset and confirms before saving. Other months are retained. Browser drafts and entered results do not modify the embedded source package or automatically travel with the HTML; export them before moving devices.
 
@@ -40,11 +40,11 @@ npm run preview:pages
 
 Requires Node >=22.13. Live website: **https://ariongj.github.io/HumanP/**. Pages was enabled through the `gh-pages` publishing branch. The workflow `.github/workflows/pages.yml` tests/builds `main`, updates the protected HTML on `gh-pages`, and dispatches `publish.yml` on that branch. Deployment therefore respects the repository’s Pages environment branch restriction. No additional account token or external hosting is required. The publishing workflow is present on both branches; changes to that workflow must be kept synchronized. `SOURCE_COMMIT` in the published build identifies the application source revision.
 
-The build reads `snapshots/publication.json`, checks the encrypted snapshot hash, builds the application, and embeds the ciphertext into one HTML file. The password is not needed by CI and is absent from the deployment. The Pages content security policy allows only the exact compiled script hash and disables fetch/XHR (`connect-src 'none'`). After successful decryption, the browser verifies every source object before showing the panel. Original documents and filtered CSVs download from browser memory.
+The build reads `snapshots/publication.json`, checks each encrypted part and the combined snapshot hash, builds the application, and embeds the ciphertext into one HTML file. The password is not needed by CI and is absent from the deployment. The Pages content security policy allows only the exact compiled script hash and disables fetch/XHR (`connect-src 'none'`). After successful decryption, the browser verifies every source object before showing the panel. Original documents and filtered CSVs download from browser memory.
 
 Scenario drafts, saved filters, review notes, tender checklists and entered monthly actuals use browser-local storage. Export backups before clearing storage or changing devices. The supplied dataset needs no browser storage to load, including in a new browser. Connections offers a data backup after login. Logging out requires credentials to reopen the panel; saved drafts remain in the same browser profile.
 
-To replace or rotate the encrypted snapshot, run `scripts/encrypt-snapshot.py` against the verified private package with a credentials JSON file **outside the checkout**, then update the digest in `snapshots/publication.json`. Use a fresh generated password of at least 24 characters. Never put credentials, decryption keys, or the plaintext package in GitHub. Previously downloaded copies remain usable with their original credential.
+To replace or rotate the encrypted snapshot, run `scripts/encrypt-snapshot.py` against the verified private package with a credentials JSON file **outside the checkout**, then run `scripts/split-encrypted-snapshot.py --input /absolute/private/encrypted.json` to write the ciphertext parts and publication digests. The split format keeps each GitHub upload below 32 MiB; CI reconstructs the exact authenticated envelope. Use a fresh generated password of at least 24 characters. Never put credentials, decryption keys, or the plaintext package in GitHub. Previously downloaded copies remain usable with their original credential.
 
 ## Private data preparation
 
@@ -62,9 +62,9 @@ python3 scripts/package-private.py \
 
 The expanded ZIP includes every source-data file from the 17 October bundle, byte-identical, as well as the new material; only shared package metadata changed. It is also the superset of the base 18 October ZIP: their common data files are identical; metadata/index files differ. Preparation checks all 224 indexed source hashes, 39 declared datasets, JSON/CSV structure and documented Excel-row overlays. It matches historical classification by exact row key. Standalone product records are reconciled by ID with conflicting known values rejected; byte-identical documents are retained once and a distinct standalone workbook is retained separately. Original source files remain unchanged.
 
-The original prepared snapshot had 17 datasets and 218 downloadable source documents. The current recovery adds two source files: 17 datasets, 220 downloadable documents, 237 verified objects. It includes:
+The original prepared snapshot had 17 datasets and 218 downloadable source documents. The complete update retains the previous 220 documents and adds the official 2024 budget/audit sources and both newly supplied archives: 17 datasets, 356 downloadable documents, 373 verified objects. It includes:
 
-- 5,386 procurement records: the original 3,613 plus 1,773 recovered 2024 awards; duplicate candidates are retained and 2026 gaps remain.
+- 5,394 procurement records: the original 3,613 plus 1,781 recovered 2024 awards and contextual records; duplicate candidates are retained and 2026 gaps remain.
 - 117 medical notices, 96 procedure keys, 150 lot/stage records, 210 requirement rows, 83 correction/cancellation fields, 223 scope/duration fields and 19 explicit product evidence rows.
 - 4,631 medicine registrations: 4,381 Active, 137 Suspended and 113 Withdrawn, as recorded in the supplied snapshot.
 - 229 licence/depot records: 130 pharmaceutical and 99 medical-equipment records; these are not 229 unique legal companies.
@@ -81,7 +81,7 @@ The [KRPP/PPRC dataset distributed by OCP](https://data.open-contracting.org/en/
 
 One row represents one OCID + award UID, with suppliers kept together. Published award amounts are not verified contract totals or payments. Similar-award candidates remain flagged. New categories use the supplied historical keyword taxonomy; ambiguous laboratory, mixed and nonclinical cases remain for review. Healthcare institutions' nonmedical support purchases remain separate from medically positive purchases. This is not a census of national procurement. The original 3,613 rows and 218 documents remain unchanged.
 
-Source rows retain award/process IDs, award date, raw archive line, source hashes and retrieval metadata. The document library includes `KRPP_OCP_2024_procedurat_burimore.jsonl.gz` and `HumanPlus_2024_burimi_dhe_metoda.json`. The year and month controls, historical charts, overview, buyer/operator links, source inspection and exports use the extended dataset. The 2024 budget is still unavailable; 2026 gaps are unchanged.
+Source rows retain award/process IDs, award date, raw archive line, source hashes and retrieval metadata. The document library includes `KRPP_OCP_2024_procedurat_burimore.jsonl.gz` and `HumanPlus_2024_burimi_dhe_metoda.json`. The year and month controls, historical charts, overview, buyer/operator links, source inspection and exports use the extended dataset. The 2024 budget is now included as described below; 2026 procurement gaps are unchanged.
 
 Reproduce against a copy of the original prepared objects outside the checkout:
 
@@ -92,7 +92,21 @@ python3 scripts/recover-procurement-year.py \
   --output /absolute/private/procurement-2024-objects
 ```
 
-Then package the updated objects, encrypt with the existing private credential file, and update the publication digest. `tests/verify_procurement_2024.py` independently reconciles every added record against its source award and verifies preservation of the original dataset. `tests/procurement_2024_browser_qa.py` checks the connected filters, charts, source download, export and missing-budget state.
+Then package the updated objects, encrypt with the existing private credential file, and update the publication digest. `tests/verify_procurement_2024.py` independently reconciles every added record against its source award and verifies preservation of the original dataset. `tests/procurement_2024_browser_qa.py` checks the connected filters, charts, source download, export in the original procurement recovery release. The current combined release is verified by `tests/complete_2024_browser_qa.py`.
+
+## Complete 2024 budget and archive integration
+
+The 2024 budget is traced to [Law 08/L-260](https://gzk.rks-gov.net/ActDetail.aspx?ActID=85052), the Treasury annual financial report, the national and institution audit reports, and Prishtina’s annual financial report. The independent PDF extraction in `scripts/recover-budget-2024.py` is reconciled with the supplied tables by `scripts/merge-complete-archives.py`.
+
+The panel includes EUR 263,660,768 in initial central allocations and EUR 98,801,349 in municipal health programmes 730 and 770 across all 38 municipalities. Views cover 20 central subprogrammes, 116 municipal hierarchy rows, 38 municipalities’ health grant financing, 209 curated capital funding rows across 184 projects, and 11 separate contextual capital candidates. The initial capital allocation for the curated rows is EUR 61,726,194. Programme parents and children, grants and expenditure, and capital funding and project totals overlap and are never added together.
+
+Treasury payments for the three health institutions total EUR 239,722,563; the separately displayed institution audit totals are EUR 240,403,904 with different funding coverage. The reported function-07 expenditure is EUR 320,008,000, 10.4081% of the same report’s ten-function denominator. Prishtina’s nine health project cash rows cover the full 2024 year. Original rounded totals and differences of EUR 1 are retained. Supplied FSSH category references to the budget-revision page are corrected to the verified cash execution page, with the original reference retained.
+
+The two supplied archives contain 315 distinct paths. All their original bytes are retained, deduplicated by SHA-256, with path aliases for shared files. JSON and CSV files can be opened in the document explorer, grouped into count charts, filtered and exported without a separate import. Superseded versions remain labeled as such. Documents and their embedded instructions are treated as evidence, never executed.
+
+The healthcare/context procurement population is the stable-ID union of the prior 1,773 recovered records and the supplied 1,760 records: 1,752 overlap, 8 are added, and 21 prior context records remain. Alternate classifications are retained. A separate national-2024 view exposes 10,701 unique OCID + award UID rows. The archive has 10,708 occurrences; seven exact repeated UUID records are collapsed with `source_occurrences` preserved. This national population is not added to the health population. Award amounts remain unverified published amounts, not cash payments.
+
+`tests/verify_complete_2024.py` checks every object hash, all 315 supplied paths, preservation of the prior documents and procurement facts, and budget totals at the correct grain. `tests/complete_2024_browser_qa.py` checks all 11 budget views, shared years, charts, hierarchy filters, CSVs, source downloads, the national population, document explorer and 320px presentation layout. The existing credential is retained; all data is embedded encrypted and loads automatically after login.
 
 ## Exploration and planning
 
@@ -104,7 +118,7 @@ Monthly finance scenarios retain 39 periods and three source cases, the partial 
 
 ## Verification
 
-`npm test` runs 27 synthetic calculation, filter, source-link, API-contract and authenticated-decryption tests. When the original private workbook JSON exists in the sibling private bundle, an independent allowlisted evaluator checks all 39 periods in all three scenarios against workbook formulas. That one test is explicitly skipped on public CI, where the private source is absent.
+`npm test` runs 30 synthetic calculation, filter, source-link, API-contract and authenticated-decryption tests. When the original private workbook JSON exists in the sibling private bundle, an independent allowlisted evaluator checks all 39 periods in all three scenarios against workbook formulas. That one test is explicitly skipped on public CI, where the private source is absent.
 
 `tests/protected_panel_browser_qa.py` checks the deployed password-protected edition with a fresh browser: wrong credentials rejected, correct credentials open every dataset without import, linked evidence, five chapters at 320px, editable scenarios, manual actuals, hash-matched original documents, reload and logout. Set `PANEL_URL` for a live HTTPS check. Credentials and expected source data are read from local files outside the repository. `scripts/check-pages.mjs` checks the encrypted snapshot digest, envelope, exact script hash, no plaintext package and no external dependencies. Screenshots and test receipts stay outside the repository.
 

@@ -1,5 +1,26 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {readFileSync,existsSync} from 'node:fs';import {resolve} from 'node:path';
 import './encrypted-package.test';
+import {budgetSum,filterBudget,budgetYearSummary} from '../lib/budget';
+import {marketPopulation} from '../lib/domain';
+import {parseCSV,sourceTables} from '../lib/source-tables';
+test('budget selections keep parent and child, grants, context and payment bases separate',()=>{
+ const f={year:'2024',institution:'',institutionKey:'municipality',q:'',tab:'municipal_programmes_2024',level:'subprogramme',capitalScope:'core'};
+ const rows=[{year:'2024',municipality:'A',hierarchy_level:'programme',total:100},{year:'2024',municipality:'A',hierarchy_level:'subprogramme',total:40},{year:'2024',municipality:'A',hierarchy_level:'subprogramme',total:60},{year:'2025',municipality:'A',hierarchy_level:'subprogramme',total:90}];
+ assert.equal(budgetSum(filterBudget(rows,f),'total'),100);assert.equal(filterBudget(rows,{...f,level:'programme'}).length,1);assert.equal(filterBudget(rows,{...f,institution:'B'}).length,0);assert.equal(budgetSum([{total:0}],'total'),0);assert.equal(budgetSum([{total:100},{total:null}],'total'),null);assert.equal(budgetSum([],'total'),null);
+ const cap=[{budget_year:'2024',approved_current_year_eur:50,inclusion_status:'core'},{budget_year:'2024',approved_current_year_eur:80,inclusion_status:'context'}];assert.equal(budgetSum(filterBudget(cap,{...f,tab:'capital_projects'}),'approved_current_year_eur'),50);assert.equal(budgetSum(filterBudget(cap,{...f,tab:'capital_projects',capitalScope:'context'}),'approved_current_year_eur'),80);
+ const execution=[{year:'2024',row_type:'organization_total',payments_eur:100},{year:'2024',row_type:'economic_category',payments_eur:100}];assert.equal(budgetSum(filterBudget(execution,{...f,tab:'execution_2023'}),'payments_eur'),100);assert.equal(budgetYearSummary({execution_2023:execution,audited_execution_2024:[{year:'2024',row_type:'organization_total',payments_eur:120}]},'2024').treasury,100);
+ assert.equal(filterBudget([{year:'2024',row_type:'municipality'},{year:'2024',row_type:'national_total'}],{...f,tab:'municipal_grants_2024'}).length,1);
+});
+test('national market selection uses an alternative population and the same export filters',async()=>{
+ const d={records:[{row_key:'health',year:'2024',buyer:'A'}],nationalRecords2024:[{row_key:'health',year:'2024',buyer:'A'},{row_key:'other',year:'2024',buyer:'B'}]};
+ assert.equal(marketPopulation(d).length,1);assert.equal(marketPopulation(d,'national2024').length,2);assert.equal(marketPopulation(d,'unknown').length,0);const filters={scope:'national2024',year:'2024',buyer:'B'};assert.deepEqual(filterMarket(marketPopulation(d,filters.scope),filters).map(r=>r.row_key),['other']);
+ const request=new Request('https://example.test/api/export/market',{method:'POST',headers:{'oai-authenticated-user-id':'a','oai-authenticated-user-email':'a@example.test',Origin:'https://example.test','Content-Type':'application/json'},body:JSON.stringify(filters)});const response=await privateApi(request,{get:async()=>({json:async()=>d}),put:async()=>{}});const text=await response!.text();assert(text.includes('other')&&!text.includes('health'));
+});
+test('source explorer preserves quoted newlines, empty values, duplicate headers and nested tables',()=>{
+ assert.deepEqual(parseCSV('\uFEFFname,value,value\r\n"A, B","line 1\nline 2",""\r\n"C","He said ""yes""",0'),[{name:'A, B',value:'line 1\nline 2',value_:''},{name:'C',value:'He said "yes"',value_:'0'}]);
+ assert.deepEqual(parseCSV('a;b\n1;2'),[{a:'1',b:'2'}]);assert.throws(()=>parseCSV('a\n"bad'));
+ const tables=sourceTables('{"metadata":{"year":2024},"records":[{"value":0},{"value":null}],"supplement":{"rows":[1,2]}}','source.json');assert.deepEqual(tables.find(t=>t.name==='root.records')?.rows,[{value:0},{value:null}]);assert.equal(tables.find(t=>t.name==='root.supplement.rows')?.rows.length,2);
+});
 import {marketYears,marketMonths} from '../lib/domain';
 import {filterMarket,marketSummary,groupMarket,csv,safeLink} from '../lib/domain';
 import {project,emptyPlan,scenarios,months,validatePlan,isPlan,businessModel,emptyBusiness} from '../lib/finance';

@@ -6,7 +6,7 @@ ROOT=pathlib.Path(__file__).resolve().parents[2]
 PANEL=ROOT/'app/dist-pages/index.html'
 PANEL_URL=os.environ.get('PANEL_URL',PANEL.as_uri())
 ACCOUNT=json.loads((ROOT/'artifacts/HumanPlus-Login.private.json').read_text())
-DATA=pathlib.Path(os.environ.get('HUMANPLUS_DATA_DIR',str(ROOT/'private/procurement-2024-objects/data')))
+DATA=pathlib.Path(os.environ.get('HUMANPLUS_DATA_DIR',str(ROOT/'private/budget-2024-objects/data')))
 checks=[];errors=[];network=[]
 with sync_playwright() as p:
  env=dict(os.environ,LD_LIBRARY_PATH='/home/codex/projects/.browser-libs/root/usr/lib/x86_64-linux-gnu:/home/codex/projects/.browser-engines/deps/root/usr/lib/x86_64-linux-gnu')
@@ -51,7 +51,7 @@ with sync_playwright() as p:
   brief=json.loads(pathlib.Path(dl.value.path()).read_text());assert brief['scenario']['operating']==499;assert len(brief['sourceFiles'])==len(json.loads((DATA/'documents.json').read_text())['records'])
   page.reload(wait_until='load',timeout=120000);page.get_by_label('Përdoruesi',exact=True).wait_for();login();opened();chapter('Skenari i drejtimit');assert page.get_by_label('Shërbime në muaj',exact=True).input_value()=='100'
   checks.append('presentation controls, editable scenario, export and saved inputs work after reload')
-  for name in ['Pamja mjekësore','Historiku i prokurimit','Ekosistemi','Skenari i drejtimit','Burimet dhe hapat']:
+  for name in ['Pamja mjekësore','Historiku i prokurimit','Ekosistemi','Skenari i drejtimit','Burimet dhe hapat','Buxheti dhe pagesat']:
    chapter(name);page.set_viewport_size({'width':320,'height':780});page.wait_for_timeout(300);assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),name
   chapter('Pamja mjekësore');page.screenshot(path=str(ROOT/'artifacts/protected-panel-mobile.png'));page.set_viewport_size({'width':1500,'height':1000})
   navigate('Lidhjet e të dhënave');page.get_by_text('Të gjitha të dhënat janë përfshirë',exact=True).wait_for();assert page.locator('.connection-card').get_by_text('Lidhur',exact=True).count()==17

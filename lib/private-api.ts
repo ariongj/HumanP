@@ -1,6 +1,6 @@
 import {actualsApi} from './actuals-api';
 import manifest from './import-manifest.json';
-import {hasIdentity,filterMarket,csv,marketColumns} from './domain';
+import {hasIdentity,filterMarket,marketPopulation,csv,marketColumns} from './domain';
 type Store = {get(key:string):Promise<any>; head?(key:string):Promise<any>; put(key:string,body:any,options?:any):Promise<any>};
 const entries=manifest as Record<string,{sha256:string;bytes:number;contentType:string}>;
 const headers={'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'};
@@ -55,7 +55,7 @@ export async function privateApi(request:Request,bucket?:Store,development=false
   const object=await bucket?.get('sha256/'+item.sha256);
   if(!object)return json({error:'Të dhënat private ende nuk janë ngarkuar'},503);
   if(path==='/api/export/market') {
-    const data=await object.json();const rows=filterMarket(data.records,exportFilters);
+    const data=await object.json();const rows=filterMarket(marketPopulation(data,exportFilters.scope),exportFilters);
     return new Response(csv(rows,marketColumns),{headers:{...headers,'Content-Type':'text/csv; charset=utf-8','Content-Disposition':'attachment; filename="humanplus-prokurimi.csv"'}});
   }
   return new Response(object.body,{headers:{...headers,'Content-Type':item.contentType,...(download?{'Content-Disposition':`attachment; filename="${key.split('/').at(-1)}"`}:{})}});

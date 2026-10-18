@@ -1,7 +1,8 @@
 import {readSavedVault,writeSavedVault,deleteSavedVault,type SavedVault} from './vault-storage';
 import manifest from './import-manifest.json';
 import {decryptPackage} from './encrypted-package';
-import {filterMarket,csv,marketColumns} from './domain';
+import {decodeBase64} from './base64';
+import {filterMarket,marketPopulation,csv,marketColumns} from './domain';
 import {validateActuals} from './insights';
 const entries=manifest as Record<string,{sha256:string;bytes:number;contentType:string}>;
 let objects=new Map<string,Uint8Array<ArrayBuffer>>();
@@ -31,7 +32,7 @@ export async function restoreVault():Promise<boolean>{
   if(isEmbeddedVault()){
    const element=document.getElementById('humanplus-private-package');
    if(!element?.textContent)throw new Error('Kopja e plotë mungon nga ky skedar. Hape përsëri skedarin origjinal të panelit.');
-   const binary=atob(element.textContent.trim());const bytes=Uint8Array.from(binary,c=>c.charCodeAt(0));
+   const bytes=decodeBase64(element.textContent.trim());
    const blob=new Blob([bytes],{type:'application/gzip'});const verified=await verifyBundle(blob,()=>{});
    activate(verified);currentPackage={version:1,fingerprint:await fingerprint(),fileName:'HumanPlus-Private-2026-10-18.humanplus',savedAt:'2026-10-18T00:00:00Z',blob};
    status={state:'embedded',fileName:currentPackage.fileName,bytes:blob.size};return true;
@@ -64,7 +65,7 @@ async function verifyBundle(file:Blob,onProgress:(n:number)=>void){
  const verified=new Map<string,Uint8Array<ArrayBuffer>>();let count=0;
  for(const [key,item] of Object.entries(entries)){
   const encoded=value.objects[key];if(typeof encoded!=='string'||encoded.length>Math.ceil(item.bytes/3)*4)throw new Error('Objekt i pavlefshëm: '+key);
-  const binary=atob(encoded);const bytes=Uint8Array.from(binary,c=>c.charCodeAt(0));if(bytes.length!==item.bytes)throw new Error('Madhësi e pasaktë: '+key);
+  const bytes=decodeBase64(encoded);if(bytes.length!==item.bytes)throw new Error('Madhësi e pasaktë: '+key);
   const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))).map(x=>x.toString(16).padStart(2,'0')).join('');if(hash!==item.sha256)throw new Error('Përmbajtja nuk përputhet: '+key);
   verified.set(key,bytes);onProgress(Math.round(++count/Object.keys(entries).length*100));
  }
@@ -89,7 +90,7 @@ export async function appFetch(path:string,options?:RequestInit):Promise<Respons
   }return json(current||{dataset:null,etag:null});}catch{return json({error:'Importi ose ruajtja lokale dështoi.'},400);}
  }
  if(path==='/api/export/market'){
-  const data=JSON.parse(new TextDecoder().decode(objects.get('data/market.json')));const filters=JSON.parse(String(options?.body||'{}'));return new Response(csv(filterMarket(data.records,filters),marketColumns),{headers:{'Content-Type':'text/csv;charset=utf-8'}});
+  const data=JSON.parse(new TextDecoder().decode(objects.get('data/market.json')));const filters=JSON.parse(String(options?.body||'{}'));return new Response(csv(filterMarket(marketPopulation(data,filters.scope),filters),marketColumns),{headers:{'Content-Type':'text/csv;charset=utf-8'}});
  }
  const key=path.startsWith('/api/data/')?'data/'+path.slice(10)+'.json':path.slice(5);const data=objects.get(key);return data?new Response(data,{headers:{'Content-Type':entries[key].contentType}}):json({error:'Burimi mungon në paketë.'},404);
 }
