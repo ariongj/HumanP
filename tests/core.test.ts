@@ -1,5 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {readFileSync,existsSync} from 'node:fs';import {resolve} from 'node:path';
 import './encrypted-package.test';
+import './reports.test';
 import {budgetSum,filterBudget,budgetYearSummary} from '../lib/budget';
 import {marketPopulation} from '../lib/domain';
 import {parseCSV,sourceTables} from '../lib/source-tables';

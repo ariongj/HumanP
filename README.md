@@ -10,6 +10,16 @@ The static GitHub site uses a strong generated credential to derive an AES-256-G
 
 The cryptographic APIs follow the [Web Crypto key derivation](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/deriveKey) and [AES-GCM parameter](https://developer.mozilla.org/en-US/docs/Web/API/AesGcmParams) documentation.
 
+## Data, reports, products and brands
+
+The overview links directly to presentation, data, reports, products and brands. **Të dhënat** indexes all 17 embedded datasets and exposes their nested tables, search, source inspection, filtered CSV and complete JSON downloads. Record populations and overlapping source tables remain separate.
+
+**Raportet** provides procurement, budget/payment and product/brand reports. Year, population and category/brand filters drive the same charts, rows and exports. Downloadable HTML includes every selected row, beyond on-screen pagination, and can be printed or saved as PDF. JSON includes full source fields. Budget allocations, Treasury payments and audited payments remain separate, with unavailable totals left unknown.
+
+**Markat** distinguishes the 11 curated product references from 19 brand/model title mentions in the 2024 procurement sources. Names retain their original spelling and verification caveats; model mentions do not create inferred manufacturer or distributor relationships. Products retain specifications, manufacturer references and procurement evidence. Neither page treats lot values as device prices or references as confirmed stock.
+
+`tests/workspace_sections_browser_qa.py` verifies the encrypted login, dataset index, source downloads, report/chart/filter reconciliation, printable report, product/brand navigation and mobile layouts. It reads credentials and fixtures outside the checkout and writes all plaintext exports and screenshots outside the checkout.
+
 ## Offline presentation copy
 
 `HumanPlus-Presentation-Ready.html` is the private, ready-to-open edition. It embeds the entire reviewed package: all 17 datasets and 218 original documents. Open the HTML directly in a current browser; no server, package picker, previous storage, login, or network request is needed. Each opening verifies the 235 source hashes. This unencrypted offline HTML stays outside the public repository. GitHub Pages publishes only the password-encrypted edition.
@@ -118,7 +128,7 @@ Monthly finance scenarios retain 39 periods and three source cases, the partial 
 
 ## Verification
 
-`npm test` runs 30 synthetic calculation, filter, source-link, API-contract and authenticated-decryption tests. When the original private workbook JSON exists in the sibling private bundle, an independent allowlisted evaluator checks all 39 periods in all three scenarios against workbook formulas. That one test is explicitly skipped on public CI, where the private source is absent.
+`npm test` runs 35 synthetic calculation, filter, source-link, API-contract and authenticated-decryption tests. When the original private workbook JSON exists in the sibling private bundle, an independent allowlisted evaluator checks all 39 periods in all three scenarios against workbook formulas. That one test is explicitly skipped on public CI, where the private source is absent.
 
 `tests/protected_panel_browser_qa.py` checks the deployed password-protected edition with a fresh browser: wrong credentials rejected, correct credentials open every dataset without import, linked evidence, five chapters at 320px, editable scenarios, manual actuals, hash-matched original documents, reload and logout. Set `PANEL_URL` for a live HTTPS check. Credentials and expected source data are read from local files outside the repository. `scripts/check-pages.mjs` checks the encrypted snapshot digest, envelope, exact script hash, no plaintext package and no external dependencies. Screenshots and test receipts stay outside the repository.
 

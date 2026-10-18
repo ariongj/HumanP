@@ -11,7 +11,10 @@ export function parseCSV(text:string):Row[]{
 }
 export function sourceTables(text:string,fileName:string):SourceTable[]{
  if(/\.csv$/i.test(fileName))return [{name:'Tabela CSV',rows:parseCSV(text)}];
- const value=JSON.parse(text),tables:SourceTable[]=[];
+ return objectTables(JSON.parse(text));
+}
+export function objectTables(value:any):SourceTable[]{
+ const tables:SourceTable[]=[];
  function visit(v:any,path:string,depth:number){
   if(Array.isArray(v)){tables.push({name:path,rows:v.map(x=>x&&typeof x==='object'&&!Array.isArray(x)?x:{value:x})});return;}
   if(!v||typeof v!=='object')return;
