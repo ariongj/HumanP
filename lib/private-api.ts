@@ -38,7 +38,13 @@ export async function privateApi(request:Request,bucket?:Store,development=false
     const sources=await Promise.all(Object.entries(entries).filter(([key])=>key.startsWith('data/')).map(async([key,item])=>{try{const object=bucket?await (bucket.head?bucket.head('sha256/'+item.sha256):bucket.get('sha256/'+item.sha256)):null;return {name:key.slice(5,-5),bytes:item.bytes,available:!!object};}catch{return {name:key.slice(5,-5),bytes:item.bytes,available:false};}}));
     return json({checkedAt:new Date().toISOString(),sourceDate:'2026-10-17',sources,external:{status:'not_configured'}});
   }
-  if(request.method!=='GET')return json({error:'Metodë e palejuar'},405);
+  let exportFilters:Record<string,string>=Object.fromEntries(url.searchParams);
+  if(path==='/api/export/market'&&request.method==='POST'){
+    if(request.headers.get('origin')!==url.origin)return json({error:'Origjinë e palejuar'},403);
+    if(!request.headers.get('content-type')?.startsWith('application/json'))return json({error:'Kërkohet JSON'},415);
+    try{const reader=request.body?.getReader();if(!reader)return json({error:'Filtrat mungojnë'},400);let length=0;const chunks:Uint8Array[]=[];while(true){const {done,value}=await reader.read();if(done)break;length+=value.byteLength;if(length>65536){await reader.cancel();return json({error:'Përzgjedhja është shumë e madhe'},413);}chunks.push(value);}const bytes=new Uint8Array(length);let at=0;for(const chunk of chunks){bytes.set(chunk,at);at+=chunk.length;}const value=JSON.parse(new TextDecoder().decode(bytes));if(!value||typeof value!=='object'||Array.isArray(value)||Object.values(value).some(v=>typeof v!=='string'))return json({error:'Filtra të pavlefshëm'},400);exportFilters=value;
+    }catch{return json({error:'Filtra të pavlefshëm'},400);}
+  }else if(request.method!=='GET')return json({error:'Metodë e palejuar'},405);
   if(path==='/api/session')return json({authorized:true});
   let key='';let download=false;
   if(path.startsWith('/api/data/'))key='data/'+path.slice('/api/data/'.length)+'.json';
@@ -49,7 +55,7 @@ export async function privateApi(request:Request,bucket?:Store,development=false
   const object=await bucket?.get('sha256/'+item.sha256);
   if(!object)return json({error:'Të dhënat private ende nuk janë ngarkuar'},503);
   if(path==='/api/export/market') {
-    const data=await object.json();const rows=filterMarket(data.records,Object.fromEntries(url.searchParams));
+    const data=await object.json();const rows=filterMarket(data.records,exportFilters);
     return new Response(csv(rows,marketColumns),{headers:{...headers,'Content-Type':'text/csv; charset=utf-8','Content-Disposition':'attachment; filename="humanplus-prokurimi.csv"'}});
   }
   return new Response(object.body,{headers:{...headers,'Content-Type':item.contentType,...(download?{'Content-Disposition':`attachment; filename="${key.split('/').at(-1)}"`}:{})}});

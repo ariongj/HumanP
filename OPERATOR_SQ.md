@@ -27,3 +27,14 @@ Për raporte të plota të filtrave përdor eksportin CSV. Printimi pasqyron faq
 - Te **Lidhjet e të dhënave**, rifreskimi kontrollon disponueshmërinë e paketës. Nuk merr automatikisht të dhëna të reja nga interneti. Lidhjet Google Drive, Sheets dhe CRM nuk janë aktivizuar.
 - Për rezultatet mujore, shkarko modelin bosh CSV, plotëso `month,revenue_eur,variable_cost_eur,fixed_cost_eur`, zgjidh skedarin dhe shqyrto tabelën para konfirmimit. Muaji ka formatin YYYY-MM; vlerat janë EUR me pikë dhjetore. Zero duhet shprehur vetëm kur është konfirmuar.
 - Importi i konfirmuar ruhet në server për llogarinë tënde dhe zëvendëson grupin e mëparshëm. Eksporto kopjen e mëparshme nëse të duhet historiku. Rezultatet shfaqen kundrejt planit në të njëjtët muaj; muajt e munguar nuk bëhen zero. Shifrat mbeten deklarime të drejtimit pa auditim automatik.
+
+## Eksplorimi i detajuar
+
+- **Kërko kudo** (Ctrl/⌘ + K) kërkon në prokurim, katalog, dokumente dhe punëdhënës. Kliko rezultatin për të hapur pamjen me kërkimin përkatës. Kërkimi përdor paketën private, jo internetin.
+- **Filtrat e avancuar** lejojnë disa kategori, institucione, operatorë, burime, komuna dhe sinjale njëkohësisht. Brenda një dimensioni mjafton një përputhje; dimensionet kombinohen së bashku. Për sinjalet mund të kërkosh cilindo ose të gjitha. Intervalet e shumës përfshijnë vetëm EUR të dokumentuara. Numrat në listat e opsioneve i përkasin paketës së plotë.
+- **Ruaj pamjen** ruan deri në 10 përzgjedhje me emër në këtë pajisje. Ngarkimi rikthen filtrat; nuk ndryshon burimin. Eksporti CSV përfshin të gjithë filtrimin, pavarësisht faqes së tabelës.
+- Tabelat mbështesin renditje, 12/25/50/100 rreshta për faqe, kolona të zgjedhura dhe pamje kompakte. Vlerat e panjohura mbeten në fund të renditjes. Fshehja e kolonave nuk ndryshon eksportin e plotë.
+- Në prokurim, zgjidh deri në 3 rekorde për **krahasim**. Krahasimi ruan përzgjedhjen edhe kur ndryshojnë filtrat. Monedha dhe baza e shumës shfaqen veç; shumat nuk përzihen.
+- Detajet e rekordit kanë përmbledhje të lexueshme, të gjitha fushat dhe JSON burimor për shkarkim. Për katalogun, pamja **Kartat** shfaq përshkrimin, çmimin referencë dhe statusin e shqyrtimit; asnjë kartë nuk nënkupton miratim klinik ose disponueshmëri HumanPlus.
+- Partnerët filtrohen edhe sipas kontaktit të publikuar; grafiku i qytetit dhe i specialitetit ngushton të njëjtën tabelë. Biblioteka filtrohet sipas formatit dhe pranisë së tekstit të nxjerrë.
+- **Cilësia → Shqyrtimi lokal** ruan statusin, shënimin dhe kohën vetëm në këtë pajisje. “Shqyrtuar lokalisht” nuk heq sinjalet burimore dhe nuk jep miratim publikimi.

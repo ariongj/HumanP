@@ -5,10 +5,30 @@ export function safeLink(value: unknown) {
   if(typeof value !== 'string' || /[?&]id=$/i.test(value)) return null;
   try { const url = new URL(value); return ['https:', 'http:'].includes(url.protocol) && !url.username && !url.password ? value : null; } catch { return null; }
 }
+export function selectedValues(value:string|undefined):string[]{
+  if(!value)return [];try{const v=JSON.parse(value);return Array.isArray(v)&&v.length<=100&&v.every(x=>typeof x==='string')?v:[];}catch{return [];}
+}
 export function filterMarket(rows: Row[], filters: Filters) {
-  const q=(filters.q||'').toLocaleLowerCase('sq');
-  return rows.filter(r => (!q || [r.title,r.buyer,r.supplier,r.reference,r.row_key].some(x=>String(x??'').toLocaleLowerCase('sq').includes(q))) &&
-    Object.entries(filters).every(([key,value])=> !value || ['q','page'].includes(key) || (key==='flag' ? r.audit_flags.includes(value) : key==='status' ? (value==='duplicate' ? r.duplicate_flag==='True' : value==='group' ? r.group_label==='True' : value==='link' ? !r.source_link_usable : true) : String(r[key]??'')===value)));
+  const words=(filters.q||'').trim().toLocaleLowerCase('sq').split(/\s+/).filter(Boolean);
+  for(const [key,value] of Object.entries(filters)){if(key.endsWith('Any')&&value){try{const v=JSON.parse(value);if(!Array.isArray(v)||v.length>100||v.some(x=>typeof x!=='string'))return [];}catch{return [];}}}
+  const choices=Object.fromEntries(Object.entries(filters).filter(([k])=>k.endsWith('Any')).map(([k,v])=>[k.slice(0,-3),selectedValues(v)]));
+  const hasRange=Boolean(filters.minAmount||filters.maxAmount);
+  const min=filters.minAmount?Number(filters.minAmount):null,max=filters.maxAmount?Number(filters.maxAmount):null;
+  if((min!==null&&(!Number.isFinite(min)||min<0))||(max!==null&&(!Number.isFinite(max)||max<0))||(min!==null&&max!==null&&min>max))return [];
+  return rows.filter(r=>{
+    const haystack=[r.title,r.full_tender_title,r.buyer,r.supplier,r.reference,r.row_key].map(x=>String(x??'')).join(' ').toLocaleLowerCase('sq');
+    if(words.length&&!(filters.searchMode==='any'?words.some(w=>haystack.includes(w)):words.every(w=>haystack.includes(w))))return false;
+    for(const [key,values] of Object.entries(choices)){
+      if(!values.length)continue;
+      if(key==='flags'){const flags=r.audit_flags||[];if(!(filters.flagMode==='all'?values.every(v=>flags.includes(v)):values.some(v=>flags.includes(v))))return false;}
+      else if(!values.includes(String(r[key]||'E papërcaktuar')))return false;
+    }
+    const amount=numberOrNull(r.reported_value);
+    if(hasRange&&(r.value_unit!=='EUR'||amount===null||(min!==null&&amount<min)||(max!==null&&amount>max)))return false;
+    if(filters.amountPresence==='missing'&&amount!==null||filters.amountPresence==='known'&&amount===null)return false;
+    if(filters.linkState==='usable'&&!r.source_link_usable||filters.linkState==='missing'&&r.source_link_usable)return false;
+    return Object.entries(filters).every(([key,value])=>!value||key.endsWith('Any')||['q','page','searchMode','flagMode','minAmount','maxAmount','amountPresence','linkState'].includes(key)||(key==='flag'?(r.audit_flags||[]).includes(value):key==='status'?(value==='duplicate'?r.duplicate_flag==='True':value==='group'?r.group_label==='True':value==='link'?!r.source_link_usable:true):String(r[key]||'E papërcaktuar')===value));
+  });
 }
 export function marketSummary(rows: Row[]) {
   const eur=rows.filter(r=>r.value_unit==='EUR' && numberOrNull(r.reported_value)!==null);

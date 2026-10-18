@@ -20,7 +20,7 @@
     "missing_input_and_delayed_collection_cases": true
   },
   "tests": {
-    "unit_and_contract_tests": 16,
+    "unit_and_contract_tests": 20,
     "typecheck": "pass",
     "production_build": "pass",
     "anonymous_json_documents_exports": "denied",
@@ -37,7 +37,9 @@
     "catalogue_search": "pass",
     "document_full_text_search_and_download": "pass",
     "connected_workflows": "pass",
-    "actuals_import": "local R2 save/read and stale-write rejection pass; synthetic data removed"
+    "actuals_import": "local R2 save/read and stale-write rejection pass; synthetic data removed",
+    "detailed_exploration": "pass",
+    "advanced_filter_csv_reconciliation": "independently matched against real source rows"
   },
   "limits": [
     "Research is the supplied snapshot; external source freshness is not newly verified.",
