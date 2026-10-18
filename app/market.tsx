@@ -1,4 +1,5 @@
 'use client';
+import {appFetch} from '@/lib/browser-vault';
 import {useMemo,useState} from 'react';
 import {Download,RotateCcw,SlidersHorizontal,GitCompareArrows,X} from 'lucide-react';
 import {filterMarket,groupMarket,marketSummary,selectedValues,type Filters,type Row} from '@/lib/domain';
@@ -15,7 +16,7 @@ export default function Market({initialFlag=''}:{initialFlag?:string}){
  const options=(k:string)=>Array.from(new Set(all.map(r=>String(r[k]||'')).filter(Boolean))).sort();const facets=(key:string)=>groupMarket(all,key).map(r=>({value:r.label,label:label[r.label]||r.label,count:r.value}));
  const compare=all.filter(r=>comparison.includes(String(r.row_key)));const min=filters.minAmount?Number(filters.minAmount):null,max=filters.maxAmount?Number(filters.maxAmount):null;const rangeError=min!==null&&max!==null&&min>max;
  if(!data)return <Loading error={error}/>;
- async function exportRows(){setExportError('');try{const r=await fetch('/api/export/market',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(filters)});if(!r.ok)throw new Error('Eksporti kërkon hyrje të autorizuar.');download('humanplus-prokurimi.csv',await r.text(),'text/csv;charset=utf-8');}catch(e){setExportError((e as Error).message);}}
+ async function exportRows(){setExportError('');try{const r=await appFetch('/api/export/market',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(filters)});if(!r.ok)throw new Error('Eksporti kërkon hyrje të autorizuar.');download('humanplus-prokurimi.csv',await r.text(),'text/csv;charset=utf-8');}catch(e){setExportError((e as Error).message);}}
  const chipLabel=(k:string,v:string)=>k.endsWith('Any')?`${label[k.slice(0,-3)]||({flags:'Sinjale'} as any)[k.slice(0,-3)]||k.slice(0,-3)}: ${selectedValues(v).map(x=>label[x]||x).slice(0,2).join(', ')}${selectedValues(v).length>2?' +'+(selectedValues(v).length-2):''}`:`${({minAmount:'Minimum EUR',maxAmount:'Maksimum EUR',linkState:'Lidhja',amountPresence:'Shuma',searchMode:'Kërkimi',flagMode:'Sinjalet'} as any)[k]||label[k]||k}: ${label[v]||v}`;
  return <><div className="explorer-intro"><div><Tag>HULUMTIM · {fmt(all.length)} REKORDE</Tag><p>Ngushto përzgjedhjen, krahaso rekordet dhe hap evidencën burimore.</p></div><div className="actions"><button className="button secondary" onClick={()=>setFilters({})}><RotateCcw size={14}/> Pastro</button><button className="button" disabled={rangeError} onClick={exportRows}><Download size={15}/> Eksporto filtrat</button></div></div>
  <div className="filterbar"><SearchBox value={filters.q||''} onChange={v=>set('q',v)} placeholder="Kërko institucion, kompani ose procedurë…"/><Select name="Viti" value={filters.year||''} options={options('year')} onChange={v=>set('year',v)}/><Select name="Monedha" value={filters.value_unit||''} options={options('value_unit')} onChange={v=>setFilters({...filters,value_unit:v,...(v!=='EUR'?{minAmount:'',maxAmount:''}:{})})}/></div>

@@ -1,6 +1,6 @@
 # Udhëzuesi i operatorit — HumanPlus
 
-Hyr me llogarinë ChatGPT të autorizuar. Paneli dhe burimet janë private. Të dhënat janë nga paketa e 17 tetorit 2026.
+Në versionin GitHub Pages, kliko **Hap paketën .humanplus** dhe zgjidh paketën private të 18 tetorit 2026. Leximi bëhet në këtë pajisje; skedari nuk ngarkohet në GitHub. Pas rifreskimit duhet ta hapësh përsëri paketën. Draftet dhe rezultatet e importuara mbeten në shfletues. Në një pajisje të përbashkët përdor **Lidhjet e të dhënave → Fshi të dhënat lokale dhe mbyll** pasi të kesh eksportuar kopjet.
 
 1. **Përmbledhja:** zgjidh vitin e kërkimit. Rekordet e prokurimit dhe ndarjet buxhetore nuk janë të ardhura të HumanPlus.
 2. **Harta e prokurimit:** përdor kërkimin, vitin, monedhën dhe filtrat shtesë. Grafiku, tabela dhe eksporti përdorin të njëjtën përzgjedhje. Hap ikonën e burimit për ID, shumën origjinale, lidhjen dhe korrigjimet. Kandidatët për dublikatë nuk hiqen.
@@ -26,11 +26,11 @@ Për raporte të plota të filtrave përdor eksportin CSV. Printimi pasqyron faq
 - **Kontrollet e modelit** tregojnë hyrjet e munguara, marzhet negative dhe rënien nën rezervë. Janë llogaritje të deklaruara, jo këshilla të gjeneruara nga AI ose miratim profesional.
 - Te **Lidhjet e të dhënave**, rifreskimi kontrollon disponueshmërinë e paketës. Nuk merr automatikisht të dhëna të reja nga interneti. Lidhjet Google Drive, Sheets dhe CRM nuk janë aktivizuar.
 - Për rezultatet mujore, shkarko modelin bosh CSV, plotëso `month,revenue_eur,variable_cost_eur,fixed_cost_eur`, zgjidh skedarin dhe shqyrto tabelën para konfirmimit. Muaji ka formatin YYYY-MM; vlerat janë EUR me pikë dhjetore. Zero duhet shprehur vetëm kur është konfirmuar.
-- Importi i konfirmuar ruhet në server për llogarinë tënde dhe zëvendëson grupin e mëparshëm. Eksporto kopjen e mëparshme nëse të duhet historiku. Rezultatet shfaqen kundrejt planit në të njëjtët muaj; muajt e munguar nuk bëhen zero. Shifrat mbeten deklarime të drejtimit pa auditim automatik.
+- Në GitHub Pages, importi i konfirmuar ruhet në këtë shfletues dhe zëvendëson grupin e mëparshëm. Eksporto kopjen e mëparshme nëse të duhet historiku. Rezultatet shfaqen kundrejt planit në të njëjtët muaj; muajt e munguar nuk bëhen zero. Shifrat mbeten deklarime të drejtimit pa auditim automatik.
 
 ## Eksplorimi i detajuar
 
-- **Kërko kudo** (Ctrl/⌘ + K) kërkon në prokurim, katalog, dokumente dhe punëdhënës. Kliko rezultatin për të hapur pamjen me kërkimin përkatës. Kërkimi përdor paketën private, jo internetin.
+- **Kërko kudo** (Ctrl/⌘ + K) kërkon në prokurim, njoftime mjekësore, produkte, barna, operatorë të licencuar, katalog, dokumente dhe punëdhënës. Kliko rezultatin për të hapur pamjen me kërkimin përkatës. Kërkimi përdor paketën private, jo internetin.
 - **Filtrat e avancuar** lejojnë disa kategori, institucione, operatorë, burime, komuna dhe sinjale njëkohësisht. Brenda një dimensioni mjafton një përputhje; dimensionet kombinohen së bashku. Për sinjalet mund të kërkosh cilindo ose të gjitha. Intervalet e shumës përfshijnë vetëm EUR të dokumentuara. Numrat në listat e opsioneve i përkasin paketës së plotë.
 - **Ruaj pamjen** ruan deri në 10 përzgjedhje me emër në këtë pajisje. Ngarkimi rikthen filtrat; nuk ndryshon burimin. Eksporti CSV përfshin të gjithë filtrimin, pavarësisht faqes së tabelës.
 - Tabelat mbështesin renditje, 12/25/50/100 rreshta për faqe, kolona të zgjedhura dhe pamje kompakte. Vlerat e panjohura mbeten në fund të renditjes. Fshehja e kolonave nuk ndryshon eksportin e plotë.
@@ -38,3 +38,12 @@ Për raporte të plota të filtrave përdor eksportin CSV. Printimi pasqyron faq
 - Detajet e rekordit kanë përmbledhje të lexueshme, të gjitha fushat dhe JSON burimor për shkarkim. Për katalogun, pamja **Kartat** shfaq përshkrimin, çmimin referencë dhe statusin e shqyrtimit; asnjë kartë nuk nënkupton miratim klinik ose disponueshmëri HumanPlus.
 - Partnerët filtrohen edhe sipas kontaktit të publikuar; grafiku i qytetit dhe i specialitetit ngushton të njëjtën tabelë. Biblioteka filtrohet sipas formatit dhe pranisë së tekstit të nxjerrë.
 - **Cilësia → Shqyrtimi lokal** ruan statusin, shënimin dhe kohën vetëm në këtë pajisje. “Shqyrtuar lokalisht” nuk heq sinjalet burimore dhe nuk jep miratim publikimi.
+
+## Shtesa mjekësore dhe produktet
+
+- **Sektori mjekësor:** filtro 117 njoftimet sipas blerësit, kategorisë, fazës, fushës dhe datave të publikimit. Tabelat e loteve, kërkesave, ndryshimeve dhe sasive ruajnë bazat e tyre të veçanta. Detajet lidhin evidencën sipas ID-së së procedurës/njoftimit. Vlerat e loteve nuk mblidhen si pagesa; statuset dhe afatet kërkojnë rikontroll.
+- **Regjistri i barnave:** 4,631 regjistrime. Filtro statusin, prodhuesin, formën, ATC dhe mbajtësin e autorizimit. Active/Suspended/Withdrawn janë statuset e snapshot-it të lexuar më 18.10.2026, jo garanci aktuale.
+- **Operatorët e licencuar:** 229 licenca/depo; jo kompani unike. Shiko numrin, vendin, skadimin e publikuar dhe datën e burimit. Nuk supozohet përfaqësim marke.
+- **Markat dhe produktet:** 11 referenca të rakorduara nga skedarët e rinj. Marka/modeli në një tender mund të përshkruajë pajisjen ekzistuese ose një kërkesë. Vlera e prokurimit nuk është çmimi për njësi.
+- **Gatishmëria për tender:** notat 0–5 dhe pesha e tyre prodhojnë një rezultat për shqyrtim. Të pesë kushtet duhen konfirmuar; e panjohura nuk kalon. Dosja ka 16 kontrolle me shënime lokale. Te kostot, kolaterali ndikon likuiditetin por nuk zbritet si kosto e pakthyeshme. Hyrjet bosh mbeten të panjohura.
+- Eksporto pamjen për të marrë të gjithë popullatën e filtruar, pavarësisht faqes ose kolonave të dukshme. Eksporto draftin e tenderit për kopje rezervë. Burimet e reja nuk ndryshojnë miratimet klinike ose publikimin e katalogut.

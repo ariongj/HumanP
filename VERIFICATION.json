@@ -1,53 +1,66 @@
 {
   "verified_at": "2026-10-18",
+  "publication_target": "GitHub Pages",
   "source_validation": {
-    "file_hashes": 114,
-    "datasets": 26,
-    "market_records": 3613,
-    "employer_prospects": 200,
-    "catalogue_entries": 1071,
-    "catalogue_categories": 23,
-    "overlay_groups": 11,
-    "overlay_affected_records": 445,
-    "approved_public_items": 0
-  },
-  "finance": {
-    "controlled_fixture": "synthetic",
-    "months": 39,
-    "scenarios": 3,
-    "comparison": "independent allowlisted evaluation of supplied workbook formulas",
-    "source_cache_used": false,
-    "missing_input_and_delayed_collection_cases": true
+    "verifiedFiles": 224,
+    "datasets": 39,
+    "objects": 235,
+    "counts": {
+      "market": 3613,
+      "employers": 200,
+      "catalogue": 1071,
+      "medicalNotices": 117,
+      "medicalProcedures": 96,
+      "medicalLots": 150,
+      "medicines": 4631,
+      "wholesalers": 229,
+      "products": 11
+    },
+    "overlayGroups": 11,
+    "overlayAffectedRecords": 445,
+    "publicApproved": 0
   },
   "tests": {
-    "unit_and_contract_tests": 20,
+    "unit_and_contract_tests": 23,
+    "local_workbook_parity": "39 months, 3 scenarios; pass",
     "typecheck": "pass",
-    "production_build": "pass",
-    "anonymous_json_documents_exports": "denied",
-    "private_client_canaries": "absent"
+    "pages_build": "pass",
+    "browser": {
+      "checks": [
+        "invalid bundle rejected",
+        "235 hash-verified private objects loaded locally",
+        "117 notices and filtered CSV reconciled",
+        "linked procedure evidence",
+        "all eight medical tabs",
+        "withdrawn/suspended status counts",
+        "130 pharmaceutical licence rows",
+        "11 product references without duplicate merge",
+        "tender gates and cash workbook scenarios",
+        "local draft survives reload with reimport",
+        "market export uses same filters",
+        "global medicine search navigates",
+        "original XLSX downloads",
+        "17 data modules connected",
+        "local actuals import",
+        "15 navigation modules",
+        "320px new module layouts",
+        "no network data requests"
+      ],
+      "uncaughtErrors": [],
+      "requests": 30
+    }
   },
-  "browser": {
-    "sections": 10,
-    "desktop_width": 1440,
-    "mobile_width": 320,
-    "uncaught_errors": 0,
-    "filtered_csv_export": "pass",
-    "source_drawer_escape": "pass",
-    "financial_local_draft_persistence": "pass",
-    "catalogue_search": "pass",
-    "document_full_text_search_and_download": "pass",
-    "connected_workflows": "pass",
-    "actuals_import": "local R2 save/read and stale-write rejection pass; synthetic data removed",
-    "detailed_exploration": "pass",
-    "advanced_filter_csv_reconciliation": "independently matched against real source rows"
+  "privacy": {
+    "public_repository": "application source and hashes only",
+    "private_package": "separate; local browser import; no network upload",
+    "browser_sources": "memory until reload",
+    "drafts_and_imported_actuals": "browser localStorage; explicit clearing available"
   },
   "limits": [
-    "Research is the supplied snapshot; external source freshness is not newly verified.",
-    "Printed tables show their current page; CSV exports cover their full filtered population.",
-    "Private Site publication and object upload must be verified separately from local checks.",
-    "Monthly actuals can be imported by the owner; none are fabricated or bundled. Clinical and operational approvals remain missing.",
-    "Scenario/review/action drafts are browser-local; confirmed actuals imports are private per-user R2 records.",
-    "Live external connectors remain unconfigured because Sites eligibility discovery was unavailable.",
-    "Hosted signed-in import flow requires owner-browser verification."
+    "Supplied snapshot only; no new live tender, medicine or licence verification.",
+    "Pages repository setting is required separately from the workflow.",
+    "Monthly actuals absent until explicitly imported; public catalogue approval stays empty.",
+    "No cross-device synchronization.",
+    "The existing GPT Site is not updated by this GitHub build."
   ]
 }

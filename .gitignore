@@ -61,3 +61,6 @@ next-env.d.ts
 *.zip
 *.tar.gz
 *.tsbuildinfo
+
+/dist-pages/
+*.humanplus

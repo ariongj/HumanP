@@ -8,6 +8,7 @@ import xml.etree.ElementTree as ET
 parser = argparse.ArgumentParser()
 parser.add_argument('--bundle', required=True)
 parser.add_argument('--output', required=True)
+parser.add_argument('--attachments', help='Optional directory of standalone source JSON/XLSX attachments')
 args = parser.parse_args()
 root, out = pathlib.Path(args.bundle).resolve(), pathlib.Path(args.output).resolve()
 app = pathlib.Path(__file__).resolve().parents[1]
@@ -43,9 +44,13 @@ def sheet(number):
 original_sheets={'Historiku':sheet(6),'Regjistri2026':sheet(7),'Buxheti komunal':sheet(8),'Kandidatë klinikë':sheet(13),'Furnizime laboratorike':sheet(14)}
 overlays=list(csv.DictReader((root/'quality/row_corrections_overlay.csv').open(encoding='utf-8-sig')))
 records=read('private_data/market/records_with_audit_flags.json')['records']
+source_date = '2026-10-18' if (root/'private_data/medical_sector').exists() else '2026-10-17'
+classified = {r['row_key']:r for r in read('private_data/medical_sector/classified_procurement.json')['records']} if (root/'private_data/medical_sector').exists() else {}
 by_id={r['row_key']:r for r in records}
 assert len(records)==3613 and len(by_id)==3613
 for r in records:
+    for field in ('primary_sector','primary_sector_sq','classification_basis','classification_confidence','secondary_tags'):
+        if field in classified.get(r['row_key'],{}): r[field]=classified[r['row_key']][field]
     r['overlays']=[]
     raw=r['reported_value']
     r['amount']=float(raw) if raw not in ('',None) else None
@@ -116,7 +121,44 @@ for i,item in enumerate(index):
     textpath=textpath.with_suffix('.txt')
     text=(p.read_text(encoding='utf-8-sig') if p.suffix=='.txt' else textpath.read_text() if textpath.exists() else '')
     meta=source_meta.get(item['path'],{})
-    documents.append({'id':key,'name':meta.get('source_filename',p.name),'category':meta.get('category',p.parent.name),'path':item['path'],'bytes':item['bytes'],'sha256':item['sha256'],'date':meta.get('packaged_at','2026-10-17'),'status':meta.get('status','Material burimor për shqyrtim'),'text':text})
+    documents.append({'id':key,'name':meta.get('source_filename',p.name),'category':meta.get('category',p.parent.name),'path':item['path'],'bytes':item['bytes'],'sha256':item['sha256'],'date':meta.get('packaged_at',source_date),'status':meta.get('status','Material burimor për shqyrtim'),'text':text})
+attachment_audit=[]
+if args.attachments:
+    for p in sorted(pathlib.Path(args.attachments).glob('*')):
+        if p.suffix not in ('.json','.xlsx'): continue
+        digest=sha(p.read_bytes()); existing=next((d for d in documents if d['sha256']==digest),None)
+        attachment_audit.append({'name':p.name,'sha256':digest,'duplicateOf':existing['id'] if existing else None})
+        if existing: continue
+        key=f'documents/attachment-{len(attachment_audit)}{p.suffix}'
+        stage(key,p.read_bytes(),mime[p.suffix])
+        documents.append({'id':key,'name':p.name,'category':'attachments','path':p.name,'bytes':p.stat().st_size,'sha256':digest,'date':source_date,'status':'Shtojcë e përdoruesit; origjinali ruhet','text':''})
+expanded_counts={}
+if classified:
+    def medical(name): return read(f'private_data/medical_sector/{name}.json')
+    notices=medical('medical_notice_display');lots=medical('medical_award_lots')
+    assert len({r['notice_id'] for r in notices})==len(notices)==117
+    assert len({r['procedure_key'] for r in notices})==96 and len(lots)==150
+    assert set(classified)==set(by_id), 'Historical classification join must be one-to-one'
+    stage('data/medical.json',{'notices':notices,'lots':lots,'requirements':medical('medical_tender_requirements'),'changes':medical('medical_corrections_cancellations'),'scopeDetails':medical('medical_scope_quantities_duration'),'lotDescriptions':medical('medical_published_lot_details'),'products':medical('medical_explicit_products')+medical('medical_additional_products'),'statusUpdates':medical('important_status_updates'),'coverage':medical('verified_notice_coverage'),'coverageMatrix':medical('coverage_matrix'),'qualityIssues':medical('source_quality_issues'),'sourceMap':medical('source_map'),'downloadGaps':medical('spec_download_log')})
+    medicines=medical('medicinal_products_main')+medical('medicinal_products_withdrawn')
+    assert collections.Counter(r['status'] for r in medicines)=={'Active':4381,'Suspended':137,'Withdrawn':113}
+    stage('data/medicines.json',{'records':medicines,'coverage':medical('medicinal_products_coverage')})
+    wholesalers=medical('licensed_wholesalers'); assert len(wholesalers)==229
+    stage('data/wholesalers.json',{'records':wholesalers,'sources':medical('source_map')})
+    products=read('private_data/products/product_catalog.json')
+    extra=pathlib.Path(args.attachments)/'HumanPlus_Markat_Produktet_2026-10-18.json' if args.attachments else None
+    if extra and extra.exists():
+        attached=json.loads(extra.read_text())
+        assert {r['id'] for r in products['records']}=={r['id'] for r in attached['records']}
+        lookup={r['id']:r for r in attached['records']}
+        for r in products['records']:
+            for key,value in lookup[r['id']].items():
+                if key in r and r[key] is not None and value is not None: assert r[key]==value, f'Unresolved product conflict: {r["id"]}/{key}'
+                if value is not None:r[key]=value
+        products['standaloneAttachmentVerified']=True
+    stage('data/products.json',products)
+    stage('data/readiness.json',{'readiness':read('private_data/procurement_readiness/readiness_and_patterns.json'),'buyers':read('private_data/procurement_readiness/buyers_and_plans_2026-10-18.json')})
+    expanded_counts={'medicalNotices':len(notices),'medicalProcedures':96,'medicalLots':len(lots),'medicines':len(medicines),'wholesalers':len(wholesalers),'products':len(products['records'])}
 budget={k:read(f'private_data/market/{k}.json') for k in ['central_budget','municipal_budget','capital_projects','execution_2023']}
 budget['supplement']=read('private_data/public_budget/budget_supplement.json');budget['overlays']=[x for x in overlay_matches if x['status']=='budget_note']
 stage('data/market.json',{'records':records,'coverage':read('quality/coverage.json')})
@@ -130,9 +172,9 @@ stage('data/finance.json',{'template':read('private_data/finance/scenario_inputs
 stage('data/documents.json',{'records':documents})
 stage('data/plan.json',{'actions':actions,'documents':[d for d in documents if d['category']=='strategy']})
 stage('data/quality.json',{'coverage':read('quality/coverage.json'),'overlays':overlay_matches,'clinical':clinical['metadata'],'package':read('quality/package_qa.json'),'publicQueue':read('public_safe/content_approval_queue.json')})
-stage('data/overview.json',{'asOf':'2026-10-17','counts':{'market':3613,'employers':200,'catalogue':1071,'registry':5781,'doctors':50,'institutions':100,'documents':len(documents)},'coverage':read('quality/coverage.json'),'actions':actions,'targets':read('private_data/finance/scenario_inputs_template.json')['owner_targets'],'cashShares':budget['supplement']['health_actual_share']})
+stage('data/overview.json',{'asOf':source_date,'counts':{'market':3613,'employers':200,'catalogue':1071,'registry':5781,'doctors':50,'institutions':100,'documents':len(documents),**expanded_counts},'coverage':read('quality/coverage.json'),'actions':actions,'targets':read('private_data/finance/scenario_inputs_template.json')['owner_targets'],'cashShares':budget['supplement']['health_actual_share']})
 # This content-addressed allowlist contains no source rows or contact data.
 (app/'lib').mkdir(exist_ok=True)
 (app/'lib/import-manifest.json').write_text(json.dumps(objects,indent=2))
-receipt={'verifiedFiles':len(index),'datasets':len(datasets),'objects':len(objects),'bytes':sum(x['bytes'] for x in objects.values()),'counts':{'market':len(records),'employers':len(employers['records']),'catalogue':len(catalogue['analyses'])},'overlayGroups':len(overlay_matches),'overlayAffectedRecords':sum(bool(x['overlays']) for x in records),'publicApproved':len(read('public_safe/content_approval_queue.json')['approvedItems'])}
+receipt={'sourceDate':source_date,'verifiedFiles':len(index),'datasets':len(datasets),'objects':len(objects),'bytes':sum(x['bytes'] for x in objects.values()),'counts':{'market':len(records),'employers':len(employers['records']),'catalogue':len(catalogue['analyses']),**expanded_counts},'attachments':attachment_audit,'overlayGroups':len(overlay_matches),'overlayAffectedRecords':sum(bool(x['overlays']) for x in records),'publicApproved':len(read('public_safe/content_approval_queue.json')['approvedItems'])}
 (out/'validation.json').write_text(json.dumps(receipt,indent=2)); print(json.dumps(receipt,indent=2))

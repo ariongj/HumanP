@@ -36,7 +36,7 @@ export async function privateApi(request:Request,bucket?:Store,development=false
   if(path==='/api/actuals')return actualsApi(request,bucket);
   if(path==='/api/connections'&&request.method==='GET'){
     const sources=await Promise.all(Object.entries(entries).filter(([key])=>key.startsWith('data/')).map(async([key,item])=>{try{const object=bucket?await (bucket.head?bucket.head('sha256/'+item.sha256):bucket.get('sha256/'+item.sha256)):null;return {name:key.slice(5,-5),bytes:item.bytes,available:!!object};}catch{return {name:key.slice(5,-5),bytes:item.bytes,available:false};}}));
-    return json({checkedAt:new Date().toISOString(),sourceDate:'2026-10-17',sources,external:{status:'not_configured'}});
+    return json({checkedAt:new Date().toISOString(),sourceDate:'2026-10-18',sources,external:{status:'not_configured'}});
   }
   let exportFilters:Record<string,string>=Object.fromEntries(url.searchParams);
   if(path==='/api/export/market'&&request.method==='POST'){

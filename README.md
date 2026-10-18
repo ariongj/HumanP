@@ -1,76 +1,65 @@
-# HumanPlus — private management application
+# HumanPlus
 
-Albanian management and market-research app built with React, TypeScript, Vinext and Cloudflare Workers on Sites. It covers procurement, public budgets, monthly scenarios, prospects, catalogue review, strategy, source documents and data quality.
+Albanian management and research workspace with procurement, medical notices, medicines, product references, licensed operators, tender readiness, budgets, financial scenarios, partners, catalogue review and original documents. The current publishing target is **GitHub Pages**, with application source in `ariongj/HumanP`.
 
-## Development
-
-Requires Node >=22.13 and Python 3. The repository contains application code, synthetic tests and content hashes only. The private source bundle must be supplied separately.
+## GitHub Pages
 
 ```bash
-npm ci
-python3 scripts/prepare-bundle.py --bundle /absolute/private/bundle --output /absolute/private/objects
-npm test
+npm ci --ignore-scripts
 npm run typecheck
-npm run dev -- --host 127.0.0.1 --port 4186
+npm test
+npm run build:pages
+node scripts/check-pages.mjs
+npm run preview:pages
 ```
 
-Sign in through the loopback development sign-in page. This creates the Sites starter's development-only mock session, never a production account. Import the staged objects using `scripts/upload-bundle.mjs --local` (the local sign-in cookie is used only on loopback). The expected R2 binding is `BUCKET`. The dev server stores its private local R2 data under ignored `.wrangler/`; never serve that directory. The source bundle and staged objects must remain outside this checkout.
+Requires Node >=22.13. The workflow `.github/workflows/pages.yml` builds, tests and publishes on pushes to `main`. The repository's Pages source must be configured as **GitHub Actions**. Its intended URL is `https://ariongj.github.io/HumanP/`; a workflow file alone does not enable the repository setting.
+
+The public site contains code, styles and content hashes only. Open the separate `.humanplus` package using the file picker. It is read and hash-verified entirely in the browser, remains in memory until refresh/close, and is never uploaded. The Pages content security policy disables fetch/XHR/network connections (`connect-src 'none'`). This is a local-data application hosted on a public site, not a server-authenticated private site. Original documents and filtered CSVs are downloaded from browser memory. External source links open only when selected.
+
+Scenario drafts, saved filters, review notes, tender checklists and imported monthly actuals use browser-local storage. Export backups before clearing storage or changing devices. “Mbyll paketën” closes the in-memory source data; “Fshi të dhënat lokale dhe mbyll” in Connections also clears HumanPlus drafts and actuals. A shared browser profile shares those local drafts. There is no cross-device sync or GitHub authentication for the dataset.
+
+## Private data preparation
+
+Keep attachments, extracted sources, staged objects, screenshots and packages **outside this checkout**. Never commit them or copy them into `public`, `dist-pages`, workflow artifacts or releases.
 
 ```bash
-node scripts/upload-bundle.mjs --local /absolute/private/objects
-npm run build
-npm run check:privacy
+python3 scripts/prepare-bundle.py \
+  --bundle /absolute/private/HumanPlus_Interactive_Data_2026-10-18 \
+  --attachments /absolute/private/standalone-attachments \
+  --output /absolute/private/expanded-objects
+python3 scripts/package-private.py \
+  --objects /absolute/private/expanded-objects \
+  --output /absolute/private/HumanPlus-Private-2026-10-18.humanplus
 ```
 
-Sites publication uses the installed Sites workflow helper, which builds and uploads exact source commits and deployment archives. The tracked hosting manifest identifies the existing private Site; reuse its project ID. Do not create another Site for a revision. Private objects are uploaded separately after deployment; they are never included in Git, static output, or deployment archives.
+The expanded ZIP is the superset of the base 18 October ZIP: their common data files are identical; metadata/index files differ. Preparation checks all 224 indexed source hashes, 39 declared datasets, JSON/CSV structure and documented Excel-row overlays. It matches historical classification by exact row key. Standalone product records are reconciled by ID with conflicting known values rejected; byte-identical documents are retained once and a distinct standalone workbook is retained separately. Original source files remain unchanged.
 
-## Authorization boundary
+The prepared snapshot has 17 datasets and 218 downloadable source documents (235 objects). It includes:
 
-Hosted access is owner-private in the Sites access policy. Sites validates the browser/session at ingress and supplies trusted identity headers. Every private read, document download and CSV export checks identity again in `lib/private-api.ts`; these responses use `private, no-store`. Do not expose the Worker directly outside Sites or trust client-supplied identity headers on an independent server.
+- 3,613 historical procurement records, retaining duplicate candidates and the original coverage gaps.
+- 117 medical notices, 96 procedure keys, 150 lot/stage records, 210 requirement rows, 83 correction/cancellation fields, 223 scope/duration fields and 19 explicit product evidence rows.
+- 4,631 medicine registrations: 4,381 Active, 137 Suspended and 113 Withdrawn, as recorded in the supplied snapshot.
+- 229 licence/depot records: 130 pharmaceutical and 99 medical-equipment records; these are not 229 unique legal companies.
+- 11 brand/product references; shared procurement amounts are not summed as product prices.
+- 1,071 BeoLab reference entries, 200 employer prospects, 100 institutions, 50 selected doctors and 5,781 registry entries.
 
-The content-addressed import endpoint permits the exact hashes and sizes in `lib/import-manifest.json`. In production it relies on the confirmed owner-private Sites ingress boundary so the deployment service can upload without a browser identity. It has no read/list operation and cannot accept unreviewed bytes or replace content for an existing hash. Local development additionally requires the starter's mock session. Do not change this Site to a public audience. New collaborators require a reviewed platform access-policy change.
+Dates and statuses describe the supplied evidence, not newly verified current availability, legal eligibility or tender status. Unknown currencies stay outside EUR totals. Award/signing stages remain separate and joined by source identifiers; the app does not add them together as payments. Institutional capital components are not added twice. Catalogue public approval remains empty.
 
-No client password, public data directory, patient records, credentials, or personal payroll is used. The public-content endpoint always returns an empty approval list. Catalogue review forms create device-local drafts; they do not grant publication permission.
+## Exploration and planning
 
-## Reproducible data preparation
+The original advanced procurement filters, saved views, three-record comparison, table controls, source inspector and CSV exports remain available. Medical explorers filter by buyer, category, stage, scope, dates and text. Medicine filters include status, manufacturer, form, ATC and authorization holder. Licence filters include registry type and place. Charts, record counts and exports share the filtered population. Global search connects the old and new modules.
 
-`prepare-bundle.py` verifies the FILE_INDEX hashes and all dataset counts, parses JSON/CSV, applies the documented Excel-row overlays by source identity, and retains original fields plus correction provenance. Clinical field overrides retain prior values and review provenance. It stages domain-specific JSON and all available source files in a private directory. The generated import manifest contains only object keys, SHA-256, content types and sizes.
+The tender model follows the supplied workbook: five weighted criteria, five mandatory confirmation gates, a proposed 70-point threshold and separate contribution/liquidity formulas. An unknown gate stops the result. Collateral is a liquidity need, not an expense. Missing cash inputs stay unknown. Results are proposed management judgments, not authorization to bid.
 
-Source count gates: 3,613 market records; 200 employer prospects; 1,071 catalogue entries in 23 categories (957 analyses, 102 panels, 12 services). No duplicate candidate is removed. Unknown-currency rows never join EUR totals. Capital components do not get added to institutional totals.
+Monthly finance scenarios retain 39 periods and three source cases, the partial October fraction, delayed collections and unknown values. Actuals are only populated through explicit CSV import; no real financial performance is invented. In Pages, confirmed imports stay in the current browser.
 
-## Validation
+## Verification
 
-`npm test` runs synthetic financial cases, authorization and export checks. When the original workbook JSON is available in the sibling private bundle, it also compares all 39 monthly periods in all three scenarios with the actual workbook formulas using an independent allowlisted test evaluator. Without the private workbook that one parity test is explicitly skipped. No `eval` or formula execution is used in the app.
+`npm test` runs 23 synthetic calculation, filter, source-link and API-contract tests. When the original private workbook JSON exists in the sibling private bundle, an independent allowlisted evaluator checks all 39 periods in all three scenarios against workbook formulas. That one test is explicitly skipped on public CI, where the private source is absent.
 
-`tests/browser_qa.py` checks all nine views, anonymous denial, filters and exports, local drafts, catalogue and document search, downloads and 320px navigation. It requires Playwright and Chromium; executable paths and the local URL can be set through environment variables. Screenshots and reports go outside this checkout into `../artifacts/` and may contain private source information.
+`tests/pages_browser_qa.py` requires Playwright/Chromium and the separately prepared private package. It checks invalid-package rejection, real-data import, counts, exports, linked evidence, local actuals, original XLSX downloads, persisted drafts, all 15 modules, 320px layouts and the absence of data network requests. Screenshots and receipts are written outside the repository. `scripts/check-pages.mjs` checks the public build's file types, relative asset paths and network policy; local source-canary verification complements it.
 
-`npm run check:privacy` scans built client artifacts using source canaries. It is a targeted leak check, not a full security certification.
+## Retained server adapter
 
-## Current limits
-
-- Research ends at the supplied coverage boundaries; no new market, clinical or legal verification is claimed.
-- Actual sales, costs, cash balances and business agreements are not populated. Forecasts remain scenarios.
-- Scenario, review and action drafts are local to the browser/device; export them for review or backup. They are not shared live records or formal approval signatures.
-- Catalogue signoffs require external evidence and explicit publication authorization. The current public export stays empty even when draft fields are filled.
-- Document downloads preserve originals; generic download names correspond to the listed document IDs. All source dates and versions are available in the inspector.
-- Printed tables show the selected page; use CSV export for the complete filtered population.
-
-## Connected workspace update
-
-The overview, procurement view and budget view share a research year. Category chart drill-downs retain that year; exact buyer/operator links filter the same records, KPIs and CSV export. Identity-bearing filters remain in memory, outside URLs. All sections expose related views and the connections page opens each source's module.
-
-The financial scenario lab compares the three source workbook scenarios using the current draft. Volume, price and fixed-cost sliders are temporary simulations; reset does not change saved inputs. Model checks identify missing inputs, negative service margins and projected reserve shortfalls. Month selection also selects the draft's cash bridge. Unknown chart values remain gaps.
-
-`GET /api/connections` checks the 12 stored datasets; it does not fetch newer source evidence. External Drive/Sheets/CRM integrations are **not configured** because Sites plugin eligibility discovery was unavailable during this update. No external credentials or connector declarations have been invented.
-
-The connections page imports monthly aggregate actuals from CSV with columns `month,revenue_eur,variable_cost_eur,fixed_cost_eur`. It requires explicit preview/confirmation, finite nonnegative amounts, unique YYYY-MM months, and 1–120 records. These figures are owner-supplied and unaudited. `GET/PUT /api/actuals` uses authenticated identity, private/no-store responses, strict same-origin writes, a 64 KiB body limit, per-user hashed R2 keys, and conditional ETag writes to reject stale replacements. An import replaces the previous dataset; export it first to retain a copy. The immutable research bundle is unaffected. Draft scenarios and review/action edits remain browser-local.
-
-Additional local browser verification: `python3 tests/connected_browser_qa.py`. It is pinned to loopback, refuses to overwrite pre-existing local actuals, and removes its synthetic R2 fixture. Hosted consent, signed-in CSV import and external-app reads require the owner's actual browser session and are not established by these local checks.
-
-## Detailed exploration update
-
-Shared table controls provide stable numeric sorting with nulls last, column visibility, density and page size. They do not redefine the population used by KPIs or exports. Procurement supports multi-value facets, explicit any/all quality matching, all/any search terms, EUR-only inclusive amount ranges, missing-amount and source-link filters, 10 local named views, and comparisons of up to three source records. Missing classification labels match missing source fields; malformed facets return no records rather than broadening the query. The browser uses an authenticated same-origin POST for CSV exports so large multi-select filters are not placed in URLs; legacy GET exports remain supported. Both call the same filter implementation. JSON export inputs are bounded to 64 KiB.
-
-The overview adds source-year coverage (2024 remains missing), institutional concentration, quality signals, local financial-input completeness and latest owner-imported actuals. Cross-section search loads authorized source datasets only while the search dialog is open and routes results with in-memory context. Catalogue cards, reference-price/text filters, partner contact filters and group drill-downs, document format/text filters, and a local quality-review workbench expose more of the supplied evidence. Review notes do not modify source flags or approval gates. Records can be inspected as readable fields or original JSON.
-
-`tests/detailed_browser_qa.py` verifies these interactions, including independent reconciliation of advanced-filter counts and CSV records against the supplied source, persistence of saved views/review notes, keyboard search, and 320px layouts.
+The previous Vinext/Cloudflare implementation remains available through `npm run dev`, `npm run build` and `npm run start`; publishing it is not part of the GitHub Pages workflow. It expects a private Sites ingress and `BUCKET` R2 binding. `lib/private-api.ts` checks trusted identity for reads and uses immutable allowlisted imports. Do not expose it on an unauthenticated independent server or trust browser-supplied identity headers. `scripts/upload-bundle.mjs --local` is for its loopback preview. The existing Site has not been redeployed by this GitHub update.
