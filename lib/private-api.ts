@@ -1,6 +1,7 @@
+import {actualsApi} from './actuals-api';
 import manifest from './import-manifest.json';
 import {hasIdentity,filterMarket,csv,marketColumns} from './domain';
-type Store = {get(key:string):Promise<any>; put(key:string,body:any,options?:any):Promise<any>};
+type Store = {get(key:string):Promise<any>; head?(key:string):Promise<any>; put(key:string,body:any,options?:any):Promise<any>};
 const entries=manifest as Record<string,{sha256:string;bytes:number;contentType:string}>;
 const headers={'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'};
 const json=(data:unknown,status=200)=>new Response(JSON.stringify(data),{status,headers:{...headers,'Content-Type':'application/json; charset=utf-8'}});
@@ -32,6 +33,11 @@ export async function privateApi(request:Request,bucket?:Store,development=false
     return json({sha256:digest,bytes:total});
   }
   if(!hasIdentity(request))return json({error:'Kërkohet hyrja e autorizuar'},401);
+  if(path==='/api/actuals')return actualsApi(request,bucket);
+  if(path==='/api/connections'&&request.method==='GET'){
+    const sources=await Promise.all(Object.entries(entries).filter(([key])=>key.startsWith('data/')).map(async([key,item])=>{try{const object=bucket?await (bucket.head?bucket.head('sha256/'+item.sha256):bucket.get('sha256/'+item.sha256)):null;return {name:key.slice(5,-5),bytes:item.bytes,available:!!object};}catch{return {name:key.slice(5,-5),bytes:item.bytes,available:false};}}));
+    return json({checkedAt:new Date().toISOString(),sourceDate:'2026-10-17',sources,external:{status:'not_configured'}});
+  }
   if(request.method!=='GET')return json({error:'Metodë e palejuar'},405);
   if(path==='/api/session')return json({authorized:true});
   let key='';let download=false;

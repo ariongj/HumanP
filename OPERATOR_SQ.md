@@ -18,3 +18,12 @@ Hyr me llogarinë ChatGPT të autorizuar. Paneli dhe burimet janë private. Të 
 Shitjet dhe volumet reale; kostot për shërbim; pagat dhe overhead të rakorduara; gjendja e arkës dhe borxhet; ofertat e investimit; kushtet e arkëtimit; shërbimet, kapaciteti, licencat dhe afatet e konfirmuara; marrëveshjet aktive; miratimet klinike dhe të publikimit.
 
 Për raporte të plota të filtrave përdor eksportin CSV. Printimi pasqyron faqen e tabelës që është hapur. Mos vendos paketa private, kontakte ose skedarë burimorë në repository publik.
+
+## Grafikët, skenarët dhe lidhjet
+
+- Viti i zgjedhur ndahet mes përmbledhjes, prokurimit dhe buxheteve. Kliko një kategori në përmbledhje për të hapur rekordet e saj. Kliko lidhjen institucion–operator për të filtruar të dy emrat; pastro etiketat e filtrave për t'u kthyer.
+- Te **Plani financiar → Rezultatet**, krahaso skenarët Kujdesshëm, Bazë dhe Zgjerim. Rrëshqitësit provojnë ndryshime në vëllim, çmim dhe kosto fikse; nuk ruajnë ndryshime në draft. Klikimi i muajit lidh grafikun me muajin e urës së parasë. Ura përdor draftin pa rrëshqitësit provues.
+- **Kontrollet e modelit** tregojnë hyrjet e munguara, marzhet negative dhe rënien nën rezervë. Janë llogaritje të deklaruara, jo këshilla të gjeneruara nga AI ose miratim profesional.
+- Te **Lidhjet e të dhënave**, rifreskimi kontrollon disponueshmërinë e paketës. Nuk merr automatikisht të dhëna të reja nga interneti. Lidhjet Google Drive, Sheets dhe CRM nuk janë aktivizuar.
+- Për rezultatet mujore, shkarko modelin bosh CSV, plotëso `month,revenue_eur,variable_cost_eur,fixed_cost_eur`, zgjidh skedarin dhe shqyrto tabelën para konfirmimit. Muaji ka formatin YYYY-MM; vlerat janë EUR me pikë dhjetore. Zero duhet shprehur vetëm kur është konfirmuar.
+- Importi i konfirmuar ruhet në server për llogarinë tënde dhe zëvendëson grupin e mëparshëm. Eksporto kopjen e mëparshme nëse të duhet historiku. Rezultatet shfaqen kundrejt planit në të njëjtët muaj; muajt e munguar nuk bëhen zero. Shifrat mbeten deklarime të drejtimit pa auditim automatik.

@@ -1,9 +1,10 @@
 'use client';
-import {useMemo,useState} from 'react';
+import {useEffect,useMemo,useState} from 'react';
 import type {Row} from '@/lib/domain';
 import {useData,Panel,Loading,Tag,SearchBox,Select,Stat,Table,SourceDrawer,Export,fmt} from './ui';
 const tabs=[['employers','Punëdhënës'],['institutions','Institucione shëndetësore'],['doctors','Lista e 50 mjekëve'],['registry','Regjistri OMK']];
-export default function Partners(){const [tab,setTab]=useState('employers');return <><div className="tabs">{tabs.map(([k,t])=><button className={tab===k?'active':''} key={k} onClick={()=>setTab(k)}>{t}</button>)}</div><PartnerList key={tab} domain={tab}/></>;}
+import {useWorkspace} from './workspace-context';
+export default function Partners(){const {focus}=useWorkspace();const [tab,setTab]=useState(tabs.some(([id])=>id===focus.tab)?focus.tab!:'employers');useEffect(()=>{if(tabs.some(([id])=>id===focus.tab))setTab(focus.tab!);},[focus]);return <><div className="tabs">{tabs.map(([k,t])=><button className={tab===k?'active':''} key={k} onClick={()=>setTab(k)}>{t}</button>)}</div><PartnerList key={tab} domain={tab}/></>;}
 function PartnerList({domain}:{domain:string}){const {data,error}=useData(domain);const [q,setQ]=useState('');const [city,setCity]=useState('');const [priority,setPriority]=useState('');const [specialty,setSpecialty]=useState('');const [selected,setSelected]=useState<Row|null>(null);
   const all=useMemo(()=>data?.records.map((r:Row)=>{
     const raw={...r};delete raw['Shënime pas bisedës'];delete raw['Rikontaktimi më'];

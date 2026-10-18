@@ -54,3 +54,15 @@ Source count gates: 3,613 market records; 200 employer prospects; 1,071 catalogu
 - Catalogue signoffs require external evidence and explicit publication authorization. The current public export stays empty even when draft fields are filled.
 - Document downloads preserve originals; generic download names correspond to the listed document IDs. All source dates and versions are available in the inspector.
 - Printed tables show the selected page; use CSV export for the complete filtered population.
+
+## Connected workspace update
+
+The overview, procurement view and budget view share a research year. Category chart drill-downs retain that year; exact buyer/operator links filter the same records, KPIs and CSV export. Identity-bearing filters remain in memory, outside URLs. All sections expose related views and the connections page opens each source's module.
+
+The financial scenario lab compares the three source workbook scenarios using the current draft. Volume, price and fixed-cost sliders are temporary simulations; reset does not change saved inputs. Model checks identify missing inputs, negative service margins and projected reserve shortfalls. Month selection also selects the draft's cash bridge. Unknown chart values remain gaps.
+
+`GET /api/connections` checks the 12 stored datasets; it does not fetch newer source evidence. External Drive/Sheets/CRM integrations are **not configured** because Sites plugin eligibility discovery was unavailable during this update. No external credentials or connector declarations have been invented.
+
+The connections page imports monthly aggregate actuals from CSV with columns `month,revenue_eur,variable_cost_eur,fixed_cost_eur`. It requires explicit preview/confirmation, finite nonnegative amounts, unique YYYY-MM months, and 1–120 records. These figures are owner-supplied and unaudited. `GET/PUT /api/actuals` uses authenticated identity, private/no-store responses, strict same-origin writes, a 64 KiB body limit, per-user hashed R2 keys, and conditional ETag writes to reject stale replacements. An import replaces the previous dataset; export it first to retain a copy. The immutable research bundle is unaffected. Draft scenarios and review/action edits remain browser-local.
+
+Additional local browser verification: `python3 tests/connected_browser_qa.py`. It is pinned to loopback, refuses to overwrite pre-existing local actuals, and removes its synthetic R2 fixture. Hosted consent, signed-in CSV import and external-app reads require the owner's actual browser session and are not established by these local checks.
