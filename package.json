@@ -16,6 +16,7 @@
     "typecheck": "tsc --noEmit",
     "check:privacy": "node scripts/security-check.mjs",
     "build:pages": "vite build --config vite.pages.config.ts",
+    "build:portable": "vite build --config vite.portable.config.ts",
     "preview:pages": "vite preview --config vite.pages.config.ts"
   },
   "dependencies": {

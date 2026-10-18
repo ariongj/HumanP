@@ -1,5 +1,16 @@
 # Udhëzuesi i operatorit — HumanPlus
 
+## Paneli i plotë pa import
+
+Hap **HumanPlus-Presentation-Ready.html** në shfletues. Të gjitha të dhënat dhe 218 dokumentet janë brenda skedarit; nuk zgjedh asnjë paketë. Hapet edhe pa internet dhe pa ruajtje të mëparshme. Kopja përmban burimet private, prandaj shpërndaje vetëm te audienca e synuar.
+
+- **Prezantimi HumanPlus:** pesë kapituj me grafiqe, gjetje të llogaritura nga burimet dhe lidhje me evidencën. **Nis prezantimin** fsheh menunë; shigjetat ndërrojnë kapitullin dhe Esc kthen panelin.
+- **Skenari i drejtimit:** ndrysho volumin, çmimin, koston për shërbim dhe kostot fikse. Rezultatet janë skenar, jo shitje faktike. Hyrjet bosh mbeten të panjohura.
+- **Lidhjet e të dhënave:** shkruaj muajin dhe totalet drejtpërdrejt, pa CSV. **Shqyrto muajin** paraqet grupin për konfirmim; muajt e tjerë ruhen.
+- **Eksporto briefin:** ruan filtrat, ID-të e njoftimeve, gjetjet, supozimet dhe referencat e dokumenteve. Draftet dhe rezultatet e reja ruhen lokalisht; nuk shtohen automatikisht në skedarin HTML origjinal.
+
+Udhëzimet më poshtë për importin fillestar zbatohen vetëm për versionin publik GitHub Pages me burime të ndara.
+
 Në versionin GitHub Pages, kliko **Hap dhe ruaj paketën .humanplus** dhe zgjidh paketën private të 18 tetorit 2026. Leximi bëhet në këtë pajisje; skedari nuk ngarkohet në GitHub. Këtë e bën vetëm një herë për këtë shfletues. Të 17 grupet e të dhënave dhe 218 dokumentet ruhen dhe hapen automatikisht pas rifreskimit, në një skedë të re dhe pas rihapjes së shfletuesit. Draftet dhe rezultatet e importuara mbeten gjithashtu në shfletues. Kopja e vjetër që mbahej vetëm në kujtesë duhet hapur një herë në versionin e ri. Në një pajisje të përbashkët përdor **Lidhjet e të dhënave → Fshi të dhënat lokale dhe mbyll** pasi të kesh eksportuar kopjet.
 
 1. **Përmbledhja:** zgjidh vitin e kërkimit. Rekordet e prokurimit dhe ndarjet buxhetore nuk janë të ardhura të HumanPlus.

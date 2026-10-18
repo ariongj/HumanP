@@ -24,7 +24,7 @@
     "earlier_bundle_coverage": "all 17 October source-data files retained byte-identically in expanded bundle; common metadata updated"
   },
   "tests": {
-    "unit_and_contract_tests": 23,
+    "unit_and_contract_tests": 25,
     "local_workbook_parity": "39 months, 3 scenarios; pass",
     "typecheck": "pass",
     "pages_build": "pass",
@@ -68,13 +68,28 @@
       "uncaughtErrors": [],
       "dataNetworkRequests": [],
       "engine": "Chromium Headless Shell 1243"
+    },
+    "portable_presentation": {
+      "checks": [
+        "clean file:// open loads all data with IndexedDB unavailable and no package picker",
+        "filtered KPI, findings, CSV and procedure evidence reconcile",
+        "presentation controls, editable scenario, export and saved inputs work after reload",
+        "17 datasets connected; manual monthly entry needs no CSV and preserves earlier months",
+        "original embedded document download matches source SHA-256",
+        "another clean browser profile opens preloaded without setup"
+      ],
+      "uncaughtErrors": [],
+      "networkRequests": [],
+      "htmlBytes": 32296825,
+      "mobile": "all five chapters at 320px"
     }
   },
   "privacy": {
     "public_repository": "application source and hashes only",
     "private_package": "separate; one initial browser import; no network upload",
     "browser_sources": "compressed private package persisted in IndexedDB; automatically restored and hash-verified on startup",
-    "drafts_and_imported_actuals": "browser localStorage; explicit clearing available"
+    "drafts_and_imported_actuals": "browser localStorage; explicit clearing available",
+    "portable_edition": "complete private data embedded in an HTML file outside the public checkout; no data network requests"
   },
   "limits": [
     "Supplied snapshot only; no new live tender, medicine or licence verification.",
@@ -87,5 +102,10 @@
     "branch": "gh-pages",
     "private_data": "not published",
     "verification_method": "Match published SOURCE_COMMIT to source revision and smoke-check the live panel after deployment."
+  },
+  "delivery": {
+    "complete_panel": "HumanPlus-Presentation-Ready.html",
+    "automatic_loading": "No initial package import; verified clean file URL startup with IndexedDB unavailable",
+    "public_site": "Application source only; exposing the entire dataset publicly requires separate user approval"
   }
 }

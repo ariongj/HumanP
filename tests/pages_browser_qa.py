@@ -9,7 +9,7 @@ with sync_playwright() as p:
   page.get_by_label('Hap paketën private HumanPlus').set_input_files(str(PACKAGE));page.get_by_role('navigation').wait_for(timeout=60000)
  def go(name):
   if page.viewport_size['width']<761:page.get_by_role('button',name='Hap menunë',exact=True).click()
-  page.get_by_role('navigation').get_by_role('button',name=name,exact=True).click();page.wait_for_function("!document.body.innerText.includes('Po ngarkohen burimet private')")
+  page.get_by_role('navigation').get_by_role('button',name=name,exact=True).click();page.get_by_role('heading',name=name,exact=True,level=1).wait_for();page.get_by_role('status').filter(has_text='Po ngarkohen burimet private').wait_for(state='hidden')
  def shot(name):
   page.evaluate('window.scrollTo(0,0)');page.wait_for_timeout(200);page.screenshot(path=str(ROOT/'artifacts'/name),full_page=True)
  def export_rows():

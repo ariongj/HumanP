@@ -2,6 +2,23 @@
 
 Albanian management and research workspace with procurement, medical notices, medicines, product references, licensed operators, tender readiness, budgets, financial scenarios, partners, catalogue review and original documents. The current publishing target is **GitHub Pages**, with application source in `ariongj/HumanP`.
 
+## Complete private presentation panel
+
+`HumanPlus-Presentation-Ready.html` is the private, ready-to-open edition. It embeds the entire reviewed package: all 17 datasets and 218 original documents. Open the HTML directly in a current browser; no server, package picker, previous storage, login, or network request is needed. Each opening verifies the 235 source hashes. The HTML remains outside this public repository and must not be placed in Pages assets under the source-only publishing policy.
+
+```bash
+npm run build:portable
+python3 scripts/package-presentation.py \
+  --package /absolute/private/HumanPlus-Private-2026-10-18.humanplus \
+  --output /absolute/private/HumanPlus-Presentation-Ready.html
+```
+
+The packager rejects output inside the application checkout. It verifies the full package before embedding it, generates an IIFE for file URLs, and allows only its exact inline script hash under a network-disabled content security policy. `dist-portable` contains application code only and is ignored. The final private HTML contains the full data and should be shared only with the intended audience.
+
+The presentation opens with medical evidence and includes five chapters: medical notices, historical procurement, the research ecosystem, editable monthly scenarios, and sources/actions. Presentation mode hides application navigation, supports chapter controls and Escape, and retains the source drill-downs. Filters, findings, CSV and brief exports use the same selected records. Notice and procedure counts remain distinct; partial coverage and missing financial actuals remain explicit. The simple editable scenario is not an approved forecast or cash model. Its assumptions persist locally when storage is available. Use the full financial module for the 39-month model.
+
+Connections also supports direct monthly actuals entry without CSV. The user provides month, three reconciled totals and a source reference, reviews the merged dataset and confirms before saving. Other months are retained. Browser drafts and entered results do not modify the embedded source package or automatically travel with the HTML; export them before moving devices.
+
 ## GitHub Pages
 
 ```bash
@@ -56,9 +73,9 @@ Monthly finance scenarios retain 39 periods and three source cases, the partial 
 
 ## Verification
 
-`npm test` runs 23 synthetic calculation, filter, source-link and API-contract tests. When the original private workbook JSON exists in the sibling private bundle, an independent allowlisted evaluator checks all 39 periods in all three scenarios against workbook formulas. That one test is explicitly skipped on public CI, where the private source is absent.
+`npm test` runs 25 synthetic calculation, filter, source-link and API-contract tests. When the original private workbook JSON exists in the sibling private bundle, an independent allowlisted evaluator checks all 39 periods in all three scenarios against workbook formulas. That one test is explicitly skipped on public CI, where the private source is absent.
 
-`tests/pages_browser_qa.py` requires Playwright/Chromium and the separately prepared private package. It checks invalid-package rejection, real-data import, counts, exports, linked evidence, local actuals, original XLSX downloads, persisted drafts, all 15 modules, 320px layouts and the absence of data network requests. `tests/vault_persistence_qa.py` additionally closes and restarts Chromium with the same profile, verifies byte-identical package/document backups, rejects stale snapshots, simulates unavailable storage and successful retry, and checks explicit deletion across tabs. Screenshots and receipts are written outside the repository. `scripts/check-pages.mjs` checks the public build's file types, relative asset paths and network policy; local source-canary verification complements it.
+`tests/pages_browser_qa.py` requires Playwright/Chromium and the separately prepared private package. It checks invalid-package rejection, real-data import, counts, exports, linked evidence, local actuals, original XLSX downloads, persisted drafts, the original 15 modules, 320px layouts and the absence of data network requests. `tests/vault_persistence_qa.py` additionally closes and restarts Chromium with the same profile, verifies byte-identical package/document backups, rejects stale snapshots, simulates unavailable storage and successful retry, and checks explicit deletion across tabs. `tests/presentation_browser_qa.py` opens the complete HTML directly from disk in clean profiles with networking blocked and IndexedDB unavailable; it verifies source reconciliation, linked evidence, all five chapters at 320px, editable scenarios, manual actuals, and original document hashes. Screenshots and receipts are written outside the repository. `scripts/check-pages.mjs` checks the public build's file types, relative asset paths and network policy; local source-canary verification complements it.
 
 ## Retained server adapter
 

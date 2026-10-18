@@ -63,4 +63,5 @@ next-env.d.ts
 *.tsbuildinfo
 
 /dist-pages/
+/dist-portable/
 *.humanplus

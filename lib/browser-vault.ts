@@ -5,12 +5,13 @@ import {validateActuals} from './insights';
 const entries=manifest as Record<string,{sha256:string;bytes:number;contentType:string}>;
 let objects=new Map<string,Uint8Array<ArrayBuffer>>();
 let urls=new Map<string,string>();
-export type VaultStatus={state:'empty'|'restoring'|'saved'|'temporary'|'error';message?:string;fileName?:string;savedAt?:string;bytes?:number};
+export type VaultStatus={state:'empty'|'restoring'|'saved'|'embedded'|'temporary'|'error';message?:string;fileName?:string;savedAt?:string;bytes?:number};
 let status:VaultStatus={state:'empty'};
 let currentPackage:SavedVault|null=null;
 let restoring:Promise<boolean>|null=null;
 let channel:BroadcastChannel|null=null;
 export const getVaultStatus=():VaultStatus=>({...status});
+export const isEmbeddedVault=()=>typeof document!=='undefined'&&document.documentElement.dataset.host==='portable';
 const digest=async(bytes:BufferSource)=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))).map(x=>x.toString(16).padStart(2,'0')).join('');
 const fingerprint=()=>digest(new TextEncoder().encode(JSON.stringify(Object.entries(entries).sort(([a],[b])=>a.localeCompare(b)))));
 function listenForRemoval(){if(!channel&&typeof BroadcastChannel!=='undefined'){channel=new BroadcastChannel('humanplus-private-vault');channel.onmessage=e=>{if(e.data==='removed')location.reload();};}}
@@ -23,13 +24,22 @@ export async function restoreVault():Promise<boolean>{
  listenForRemoval();
  if(objects.size)return true;
  if(restoring)return restoring;
- restoring=(async()=>{status={state:'restoring'};try{const saved=await readSavedVault();if(!saved){status={state:'empty'};return false;}
+ restoring=(async()=>{status={state:'restoring'};try{
+  if(isEmbeddedVault()){
+   const element=document.getElementById('humanplus-private-package');
+   if(!element?.textContent)throw new Error('Kopja e plotë mungon nga ky skedar. Hape përsëri skedarin origjinal të panelit.');
+   const binary=atob(element.textContent.trim());const bytes=Uint8Array.from(binary,c=>c.charCodeAt(0));
+   const blob=new Blob([bytes],{type:'application/gzip'});const verified=await verifyBundle(blob,()=>{});
+   activate(verified);currentPackage={version:1,fingerprint:await fingerprint(),fileName:'HumanPlus-Private-2026-10-18.humanplus',savedAt:'2026-10-18T00:00:00Z',blob};
+   status={state:'embedded',fileName:currentPackage.fileName,bytes:blob.size};return true;
+  }
+  const saved=await readSavedVault();if(!saved){status={state:'empty'};return false;}
   if(saved.version!==1||!(saved.blob instanceof Blob)||saved.fingerprint!==await fingerprint())throw new Error('Kopja e ruajtur i përket një pakete tjetër. Hap paketën për këtë version; draftet e tua ruhen.');
   const verified=await verifyBundle(saved.blob,()=>{});activate(verified);currentPackage=saved;status={state:'saved',fileName:saved.fileName,savedAt:saved.savedAt,bytes:saved.blob.size};return true;
  }catch(error){status={state:'error',message:error instanceof Error?error.message:'Kopja lokale nuk mund të lexohej. Hape paketën një herë për ta rikthyer.'};return false;}})();return restoring;
 }
 
-export const isBrowserVault=()=>typeof window!=='undefined'&&document.documentElement.dataset.host==='github-pages';
+export const isBrowserVault=()=>typeof window!=='undefined'&&['github-pages','portable'].includes(document.documentElement.dataset.host||'');
 const json=(value:unknown,status=200)=>new Response(JSON.stringify(value),{status,headers:{'Content-Type':'application/json'}});
 async function verifyBundle(file:Blob,onProgress:(n:number)=>void){
  if(file.size>80_000_000)throw new Error('Paketa e kompresuar është më e madhe se kufiri 80 MB.');
