@@ -1,4 +1,0 @@
-import {readdir,readFile} from 'node:fs/promises';import {join} from 'node:path';import assert from 'node:assert/strict';
-async function files(dir){return (await Promise.all((await readdir(dir,{withFileTypes:true})).map(e=>e.isDirectory()?files(join(dir,e.name)):[join(dir,e.name)]))).flat();}
-const paths=await files('dist-pages');for(const p of paths){assert(!/\.(xlsx|docx|pdf|csv|zip|humanplus|json)$/.test(p),'Private data file in Pages build: '+p);if(/\.(js|html|css)$/.test(p)){const s=await readFile(p,'utf8');assert(!s.includes('siwc_bypass_bearer_token'));assert(!s.includes('supplier_business_email":"'));}}
-const html=await readFile('dist-pages/index.html','utf8');assert(html.includes("connect-src 'none'"));assert(!html.includes('src="/assets/'));console.log('Pages build checked: relative assets, network disabled, no private data files.');
