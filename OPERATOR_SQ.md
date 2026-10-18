@@ -2,7 +2,7 @@
 
 ## Paneli i plotë pa import
 
-Hap **https://ariongj.github.io/HumanP/**. Shkruaj përdoruesin dhe fjalëkalimin që ke marrë veçmas. Të gjitha 17 grupet e të dhënave dhe 218 dokumentet hapen automatikisht pas hyrjes; nuk importon asgjë. Burimet në GitHub janë të enkriptuara. **Dil dhe kyç panelin** mbyll qasjen edhe në skedat e tjera. Pas rifreskimit hyn sërish me fjalëkalim.
+Hap **https://ariongj.github.io/HumanP/**. Shkruaj përdoruesin dhe fjalëkalimin që ke marrë veçmas. Të gjitha 17 grupet e të dhënave dhe 220 dokumentet hapen automatikisht pas hyrjes; nuk importon asgjë. Burimet në GitHub janë të enkriptuara. **Dil dhe kyç panelin** mbyll qasjen edhe në skedat e tjera. Pas rifreskimit hyn sërish me fjalëkalim.
 
 Kopja lokale **HumanPlus-Presentation-Ready.html** është versioni i veçantë pa enkriptim; mbaje privatisht.
 - **Prezantimi HumanPlus:** pesë kapituj me grafiqe, gjetje të llogaritura nga burimet dhe lidhje me evidencën. **Nis prezantimin** fsheh menunë; shigjetat ndërrojnë kapitullin dhe Esc kthen panelin.
@@ -60,3 +60,11 @@ Për raporte të plota të filtrave përdor eksportin CSV. Printimi pasqyron faq
 ## Hapja automatike
 
 Te **Lidhjet e të dhënave → Ruajtja dhe kopja rezervë**, statusi **Të gjitha të dhënat janë përfshirë** konfirmon paketën e plotë. Pas hyrjes mund të shkarkosh kopjen e të dhënave. Edhe në një pajisje të re, hyn me përdoruesin dhe fjalëkalimin; nuk zgjedh paketë. Draftet dhe rezultatet e reja ruhen në shfletuesin ku punon.
+
+## Prokurimi 2024
+
+- Zgjidh **2024** në përmbledhje, historikun e prezantimit ose hartën e prokurimit: 1,773 regjistrime shpërblimi, 1,163 procedura dhe 12 muaj. Grafiqet, filtrat dhe eksporti përdorin të njëjtat rekorde.
+- **Muaji i prokurimit** ngushton vitin; klikimi i muajit në prezantim hap regjistrin e filtruar. Klikimi i kategorisë ose institucionit ruan vitin. **Pastro** rikthen të gjitha vitet.
+- Burimi është arkivi KRPP / OCP i marrë nga OCP më 08.03.2026. Përfshihen blerës shëndetësorë, blerje mbështetëse dhe kandidatë mjekësorë/laboratorikë; nuk është total kombëtar ose vlerë pagesash. Klasifikimet e reja tekstuale kërkojnë shqyrtim.
+- Te **Dokumentet dhe burimet**, kërko **2024** për skedarin e procedurave dhe raportin e metodës. Çdo rekord ka ID shpërblimi, ID procedure dhe gjurmë burimore.
+- **Buxheti 2024** mbetet pa burim; nuk plotësohet me zero ose me shumat e prokurimit.

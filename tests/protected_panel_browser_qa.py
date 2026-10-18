@@ -6,7 +6,7 @@ ROOT=pathlib.Path(__file__).resolve().parents[2]
 PANEL=ROOT/'app/dist-pages/index.html'
 PANEL_URL=os.environ.get('PANEL_URL',PANEL.as_uri())
 ACCOUNT=json.loads((ROOT/'artifacts/HumanPlus-Login.private.json').read_text())
-DATA=ROOT/'private/expanded-objects/data'
+DATA=pathlib.Path(os.environ.get('HUMANPLUS_DATA_DIR',str(ROOT/'private/procurement-2024-objects/data')))
 checks=[];errors=[];network=[]
 with sync_playwright() as p:
  env=dict(os.environ,LD_LIBRARY_PATH='/home/codex/projects/.browser-libs/root/usr/lib/x86_64-linux-gnu:/home/codex/projects/.browser-engines/deps/root/usr/lib/x86_64-linux-gnu')
@@ -48,7 +48,7 @@ with sync_playwright() as p:
   assert [int(re.sub(r'\D','',s)) for s in page.locator('.stats .stat strong').all_inner_texts()]==[2500,499,15,67]
   page.get_by_role('button',name='Ruaj hyrjet',exact=True).click();page.get_by_text('Hyrjet u ruajtën në këtë pajisje.',exact=True).wait_for()
   with page.expect_download() as dl:page.get_by_role('button',name='Eksporto briefin',exact=True).click()
-  brief=json.loads(pathlib.Path(dl.value.path()).read_text());assert brief['scenario']['operating']==499;assert len(brief['sourceFiles'])==218
+  brief=json.loads(pathlib.Path(dl.value.path()).read_text());assert brief['scenario']['operating']==499;assert len(brief['sourceFiles'])==len(json.loads((DATA/'documents.json').read_text())['records'])
   page.reload(wait_until='load',timeout=120000);page.get_by_label('Përdoruesi',exact=True).wait_for();login();opened();chapter('Skenari i drejtimit');assert page.get_by_label('Shërbime në muaj',exact=True).input_value()=='100'
   checks.append('presentation controls, editable scenario, export and saved inputs work after reload')
   for name in ['Pamja mjekësore','Historiku i prokurimit','Ekosistemi','Skenari i drejtimit','Burimet dhe hapat']:

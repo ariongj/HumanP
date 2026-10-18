@@ -4,7 +4,7 @@ Albanian management and research workspace with procurement, medical notices, me
 
 ## Ready-to-use password-protected panel
 
-Open **https://ariongj.github.io/HumanP/** and sign in. The complete supplied package is already included, encrypted: all 17 datasets and 218 original documents load automatically after login. There is no package picker or import step. Each opening verifies all 235 object hashes. Logout clears the unlocked data and locks other open tabs; a page reload requires login again. Credentials are delivered separately and are never committed.
+Open **https://ariongj.github.io/HumanP/** and sign in. The complete supplied package is already included, encrypted: all 17 datasets, 218 original documents and two 2024 recovery source files load automatically after login. There is no package picker or import step. Each opening verifies all 237 object hashes. Logout clears the unlocked data and locks other open tabs; a page reload requires login again. Credentials are delivered separately and are never committed.
 
 The static GitHub site uses a strong generated credential to derive an AES-256-GCM decryption key with PBKDF2-SHA256 (600,000 iterations, random salt and IV). This protects the data itself, rather than merely hiding the interface. It is a single shared credential, not a server account system with individual users or remote revocation. The public repository holds only the encrypted snapshot and application code. Browser drafts and subsequently entered actuals stay in the browser profile; they are not uploaded.
 
@@ -62,9 +62,9 @@ python3 scripts/package-private.py \
 
 The expanded ZIP includes every source-data file from the 17 October bundle, byte-identical, as well as the new material; only shared package metadata changed. It is also the superset of the base 18 October ZIP: their common data files are identical; metadata/index files differ. Preparation checks all 224 indexed source hashes, 39 declared datasets, JSON/CSV structure and documented Excel-row overlays. It matches historical classification by exact row key. Standalone product records are reconciled by ID with conflicting known values rejected; byte-identical documents are retained once and a distinct standalone workbook is retained separately. Original source files remain unchanged.
 
-The prepared snapshot has 17 datasets and 218 downloadable source documents (235 objects). It includes:
+The original prepared snapshot had 17 datasets and 218 downloadable source documents. The current recovery adds two source files: 17 datasets, 220 downloadable documents, 237 verified objects. It includes:
 
-- 3,613 historical procurement records, retaining duplicate candidates and the original coverage gaps.
+- 5,386 procurement records: the original 3,613 plus 1,773 recovered 2024 awards; duplicate candidates are retained and 2026 gaps remain.
 - 117 medical notices, 96 procedure keys, 150 lot/stage records, 210 requirement rows, 83 correction/cancellation fields, 223 scope/duration fields and 19 explicit product evidence rows.
 - 4,631 medicine registrations: 4,381 Active, 137 Suspended and 113 Withdrawn, as recorded in the supplied snapshot.
 - 229 licence/depot records: 130 pharmaceutical and 99 medical-equipment records; these are not 229 unique legal companies.
@@ -72,6 +72,27 @@ The prepared snapshot has 17 datasets and 218 downloadable source documents (235
 - 1,071 BeoLab reference entries, 200 employer prospects, 100 institutions, 50 selected doctors and 5,781 registry entries.
 
 Dates and statuses describe the supplied evidence, not newly verified current availability, legal eligibility or tender status. Unknown currencies stay outside EUR totals. Award/signing stages remain separate and joined by source identifiers; the app does not add them together as payments. Institutional capital components are not added twice. Catalogue public approval remains empty.
+
+## 2024 procurement recovery
+
+The [KRPP/PPRC dataset distributed by OCP](https://data.open-contracting.org/en/publication/115) supplies the missing year. The full archived JSONL snapshot (`kosovo/3446/full.jsonl.gz`, SHA-256 `b782bdb3c323b3a6b9bba72c906756744700752bd9287efe55dbab4fe1f1341b`) was downloaded on 18 October 2026; OCP records the upstream retrieval as 8 March 2026. A direct KRPP API sample request timed out, so this is a recovery from that historical mirror, not a fresh verification of current award status.
+
+`scripts/recover-procurement-year.py` scans all 75,710 processes and selects by `award.date`, preserving the publisher's nonstandard singular `award` field. The archive contains 10,708 national award objects dated 2024. HumanPlus includes 1,773 within its healthcare-buyer and medical/laboratory-title research scope, covering 1,163 processes and all 12 months. Two hundred selected awards belong to processes released in other years and would be missed by downloading only the 2024 release partition.
+
+One row represents one OCID + award UID, with suppliers kept together. Published award amounts are not verified contract totals or payments. Similar-award candidates remain flagged. New categories use the supplied historical keyword taxonomy; ambiguous laboratory, mixed and nonclinical cases remain for review. Healthcare institutions' nonmedical support purchases remain separate from medically positive purchases. This is not a census of national procurement. The original 3,613 rows and 218 documents remain unchanged.
+
+Source rows retain award/process IDs, award date, raw archive line, source hashes and retrieval metadata. The document library includes `KRPP_OCP_2024_procedurat_burimore.jsonl.gz` and `HumanPlus_2024_burimi_dhe_metoda.json`. The year and month controls, historical charts, overview, buyer/operator links, source inspection and exports use the extended dataset. The 2024 budget is still unavailable; 2026 gaps are unchanged.
+
+Reproduce against a copy of the original prepared objects outside the checkout:
+
+```bash
+python3 scripts/recover-procurement-year.py \
+  --archive /absolute/private/full.jsonl.gz \
+  --baseline /absolute/private/expanded-objects \
+  --output /absolute/private/procurement-2024-objects
+```
+
+Then package the updated objects, encrypt with the existing private credential file, and update the publication digest. `tests/verify_procurement_2024.py` independently reconciles every added record against its source award and verifies preservation of the original dataset. `tests/procurement_2024_browser_qa.py` checks the connected filters, charts, source download, export and missing-budget state.
 
 ## Exploration and planning
 
@@ -83,7 +104,7 @@ Monthly finance scenarios retain 39 periods and three source cases, the partial 
 
 ## Verification
 
-`npm test` runs 26 synthetic calculation, filter, source-link, API-contract and authenticated-decryption tests. When the original private workbook JSON exists in the sibling private bundle, an independent allowlisted evaluator checks all 39 periods in all three scenarios against workbook formulas. That one test is explicitly skipped on public CI, where the private source is absent.
+`npm test` runs 27 synthetic calculation, filter, source-link, API-contract and authenticated-decryption tests. When the original private workbook JSON exists in the sibling private bundle, an independent allowlisted evaluator checks all 39 periods in all three scenarios against workbook formulas. That one test is explicitly skipped on public CI, where the private source is absent.
 
 `tests/protected_panel_browser_qa.py` checks the deployed password-protected edition with a fresh browser: wrong credentials rejected, correct credentials open every dataset without import, linked evidence, five chapters at 320px, editable scenarios, manual actuals, hash-matched original documents, reload and logout. Set `PANEL_URL` for a live HTTPS check. Credentials and expected source data are read from local files outside the repository. `scripts/check-pages.mjs` checks the encrypted snapshot digest, envelope, exact script hash, no plaintext package and no external dependencies. Screenshots and test receipts stay outside the repository.
 

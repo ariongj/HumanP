@@ -1115,8 +1115,8 @@
     "contentType": "application/json"
   },
   "data/market.json": {
-    "sha256": "c1fbda2a3363fa7b334a809393f7f57aa2151970ee0b8af5113da53bbb6673a1",
-    "bytes": 9396494,
+    "sha256": "9a174fd7cf98f5e677b5d1d47266a97b72b89a1a505c01311460381f9ac2e160",
+    "bytes": 14535583,
     "contentType": "application/json"
   },
   "data/budget.json": {
@@ -1155,8 +1155,8 @@
     "contentType": "application/json"
   },
   "data/documents.json": {
-    "sha256": "64ef91d17e31718fc43e3c95799e4f53f3ce78c624e6f54eabd780da9058abf1",
-    "bytes": 1364532,
+    "sha256": "724e3ece9b24a9cc26e2bccc70595bb5ee9588c80c5e5f063d1f4b2e1965e507",
+    "bytes": 1370692,
     "contentType": "application/json"
   },
   "data/plan.json": {
@@ -1165,13 +1165,23 @@
     "contentType": "application/json"
   },
   "data/quality.json": {
-    "sha256": "03a5cb0a6b1cf3eef55f68034c6b0c5d4a3d1be6a1da0fbcbf8bf0fbcd2c0952",
-    "bytes": 13660,
+    "sha256": "8247f556b2512667616773a73b80d6965ac2a305b0ef0428f38a84526fb1a128",
+    "bytes": 18473,
     "contentType": "application/json"
   },
   "data/overview.json": {
-    "sha256": "1335e56bd99b222414cc61b09bdf57878e249d9467822b5d84d08864450601af",
-    "bytes": 4241,
+    "sha256": "8ccf31924680fbce6214859e441c4f68f9d1541cef1f717fade0086326f4957f",
+    "bytes": 9054,
+    "contentType": "application/json"
+  },
+  "documents/2024-recovered-processes.jsonl.gz": {
+    "sha256": "5a14deb1a51f04ef3bf0c70b11217420f231c574d74bc12bf6d94b0686a2ee51",
+    "bytes": 429430,
+    "contentType": "application/gzip"
+  },
+  "documents/2024-provenance.json": {
+    "sha256": "af713cc74c8a3c8cc2cc72485670e1bea28d0519944d1ed0501130b2d2d8d409",
+    "bytes": 5915,
     "contentType": "application/json"
   }
 }
