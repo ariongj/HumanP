@@ -28,11 +28,12 @@ test('table layout rejects corrupt persisted settings, adapts to schema changes 
 });
 test('connections use procedure identifiers, keep award rows unique across populations, and never infer a manufacturer',()=>{
  const row={brand:'Known',model:'AU480',procurement_id:'220-70001-0731-24-1234-1-2-1'};
- assert.equal(procedureKey(row),'0731-24-1234-1-2-1');assert.equal(procedureKey({procurement_code:'2024/220/0731-24-1234-1-2-1/B08-10'}),procedureKey(row));assert.equal(procedureKey({title:'0731-24-1234-1-2-1'}),'');
- const award={row_key:'a',reference:'0731-24-1234-1-2-1'};
+ assert.equal(procedureKey(row),row.procurement_id);assert.equal(procedureKey({procurement_code:'2024/'+row.procurement_id+'/B08-10'}),procedureKey(row));assert.equal(procedureKey({title:'0731-24-1234-1-2-1'}),'');
+ const award={row_key:'a',reference:row.procurement_id};
  const groups=connectedRecords(row,{market:{records:[award],nationalRecords2024:[award,{row_key:'b',reference:award.reference}],brandMentions2024:[{reference:award.reference,brand_or_model_as_published:'AU480'}]},products:{records:[row,{brand:'Other',model:'AU480'}]},medical:{notices:[{notice_id:'n',procedure_key:'2024/'+award.reference}],lots:[]}});
  assert.equal(groups.find(g=>g.id==='procedure')?.rows.length,2);assert.equal(groups.find(g=>g.id==='products')?.rows.length,1);assert.equal(groups.find(g=>g.id==='mentions')?.rows.length,1);assert.equal(groups.find(g=>g.id==='medical-notices')?.rows.length,1);
  assert.equal(connectedRecords({model:'AU480'},{products:{records:[row]}}).length,0);
+ assert.equal(connectedRecords(row,{market:{records:[{row_key:'different-authority',reference:'220-70020-0731-24-1234-1-2-1'}]}}).length,0);
 });
 test('entity and source-document links are explicit, preserve consortium names and separate budget bases',()=>{
  const row={buyer:'Hospital A',supplier:'A + B',source_document:'documents/source.pdf'};

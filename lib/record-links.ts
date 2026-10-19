@@ -3,8 +3,9 @@ import {budgetViews,budgetRows} from './budget';
 export type LinkedGroup={id:string;title:string;basis:string;rows:Row[]};
 export function procedureKey(row:Row):string{
  for(const key of ['procurement_id','reference','procedure_key','procurement_code','process_id']){
-  const value=String(row[key]||'').trim().replace(/\/B\d.*$/,'');
-  const match=value.match(/(?:^|[-/])(\d{2,6}-\d{2}-\d+-\d-\d-\d)$/);if(match)return match[1];
+  // Remove only the known notice/year namespace, never authority prefixes.
+  const value=String(row[key]||'').trim().replace(/\/B\d.*$/,'').replace(/^ocds-uhzcmx-/,'').replace(/^(?:19|20)\d{2}\//,'');
+  if(/^[\d/-]+$/.test(value)&&/(?:^|[-/])\d{2,6}-\d{2}-\d+-\d-\d-\d$/.test(value))return value;
  }return '';
 }
 const name=(v:unknown)=>typeof v==='string'?v.normalize('NFC').trim().replace(/\s+/g,' ').toLocaleLowerCase('sq'):'';
