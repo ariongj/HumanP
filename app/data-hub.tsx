@@ -1,4 +1,5 @@
 'use client';
+import {useEntityScope} from './entity-context';
 import {filterColumns,type ColumnFilters} from '@/lib/column-filters';
 import {useMemo,useState} from 'react';
 import {ArrowUpRight,Download} from 'lucide-react';
@@ -10,15 +11,15 @@ import {useWorkspace} from './workspace-context';
 import {useData,Loading,Panel,Stat,SearchBox,Table,Export,SourceDrawer,download,fmt} from './ui';
 
 function Dataset({id}:{id:string}){
- const {data,error}=useData(id),{go}=useWorkspace();const [columnFilters,setColumnFilters]=useState<ColumnFilters>({});const [table,setTable]=useState(''),[q,setQ]=useState(''),[selected,setSelected]=useState<Row|null>(null);
+ const {scope}=useEntityScope();const {data,error}=useData(id),{go}=useWorkspace();const [columnFilters,setColumnFilters]=useState<ColumnFilters>({});const [table,setTable]=useState(''),[q,setQ]=useState(''),[selected,setSelected]=useState<Row|null>(null);
  const tables=useMemo(()=>data?objectTables(data):[],[data]);
  const current=tables.find(t=>t.name===table)||tables.find(t=>t.name==='root.records')||tables[0];
  const rows=useMemo(()=>filterColumns(current?.rows||[],columnFilters).filter(r=>!q.trim()||JSON.stringify(r).toLocaleLowerCase('sq').includes(q.trim().toLocaleLowerCase('sq')))||[],[current,q,columnFilters]);
  const columns=useMemo(()=>Array.from(new Set((current?.rows||[]).flatMap(r=>Object.keys(r)))).map(key=>({key})),[current]);
  if(!data)return <Loading error={error}/>;const entry=dataIndex.find(x=>x.id===id)!;
  return <Panel title={entry.title} subtitle={entry.scope} action={<button className="text-button" onClick={()=>go(entry.page,{tab:id})}>Hap panelin <ArrowUpRight size={15}/></button>}>
-  <div className="filterbar"><label className="select"><span>Tabela burimore</span><select aria-label="Tabela burimore" value={current?.name||''} onChange={e=>{setTable(e.target.value);setQ('');setColumnFilters({});}}>{tables.map(t=><option key={t.name} value={t.name}>{t.name} · {fmt(t.rows.length)}</option>)}</select></label><SearchBox value={q} onChange={setQ} placeholder="Kërko në tabelën burimore…"/><Export rows={rows} name={'humanplus-'+id+'-'+(current?.name||'data')}/><button className="button secondary" onClick={()=>download('humanplus-'+id+'.json',JSON.stringify(data,null,2))}><Download size={15}/> JSON i plotë</button></div>
-  <p className="footnote">CSV përmban të gjithë rreshtat e filtruar dhe të gjitha fushat. JSON përmban të gjithë dataset-in, pavarësisht filtrave.</p>
+  <div className="filterbar"><label className="select"><span>Tabela burimore</span><select aria-label="Tabela burimore" value={current?.name||''} onChange={e=>{setTable(e.target.value);setQ('');setColumnFilters({});}}>{tables.map(t=><option key={t.name} value={t.name}>{t.name} · {fmt(t.rows.length)}</option>)}</select></label><SearchBox value={q} onChange={setQ} placeholder="Kërko në tabelën burimore…"/><Export rows={rows} name={'humanplus-'+id+'-'+(current?.name||'data')}/><button className="button secondary" onClick={()=>download('humanplus-'+id+'.json',JSON.stringify(data,null,2))}><Download size={15}/> {scope.active?'JSON i përzgjedhjes':'JSON i plotë'}</button></div>
+  <p className="footnote">CSV ndjek edhe filtrat e tabelës. JSON ndjek filtrat e panelit në tabelat e lidhura; metadata e burimit ruhet e plotë. Filtrat lokalë të kolonave nuk zbatohen në JSON.</p>
   <Table tableId={'data-'+id+'-'+current?.name} columnFilters={{value:columnFilters,onChange:setColumnFilters}} initialVisible={columns.slice(0,8).map(c=>c.key)} key={current?.name} rows={rows} columns={columns} onRow={setSelected}/><SourceDrawer row={selected} onClose={()=>setSelected(null)}/>
  </Panel>;
 }

@@ -10,6 +10,16 @@ The static GitHub site uses a strong generated credential to derive an AES-256-G
 
 The cryptographic APIs follow the [Web Crypto key derivation](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/deriveKey) and [AES-GCM parameter](https://developer.mozilla.org/en-US/docs/Web/API/AesGcmParams) documentation.
 
+## Shared brand and supplier filters
+
+**Filtrat e gjithë panelit** selects a brand/source model mention and one or more suppliers across products, procurement, medical evidence, charts, overview, presentation, reports and source tables. Existing brand pickers and supplier charts update the same selection. Suppliers combine with OR; brand and supplier combine with AND. Navigation and procurement population changes preserve the selection. Local year, search and column filters narrow it further. Procurement saved views also retain the shared brand and supplier selection.
+
+Connections use full procedure identifiers and normalized complete source names. Related procurement is procedure context, not verified brand sales or product prices. Manufacturer/model aliases and consortium membership are not inferred. Budget context requires an exact source institution name. Medicine and catalogue records without a documented relationship show no matches; operational plans and whole-package metadata are explicitly identified as outside entity filtering.
+
+CSV uses the displayed population. HTML/JSON reports and presentation briefs also record the shared selection. Dataset JSON applies entity filters to linked tables while retaining source metadata. Resetting the shared filters restores the original populations. The raw encrypted package is unchanged.
+
+`tests/global_filters_browser_qa.py` checks brand-only, supplier-only, combined and empty selections; existing picker/chart propagation; matching source IDs in tables, CSV and reports; the separate national 2024 population; navigation, reset and mobile rendering.
+
 ## Connected record workspace
 
 Tables support saved column order, widths, visibility, density, grouping and a pinned first column. Drag a column edge or use its arrow keys to resize it. Layout preferences stay in the browser profile. Procurement opens with its records; the analytical view uses the same filters.
