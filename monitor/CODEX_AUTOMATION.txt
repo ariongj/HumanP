@@ -10,7 +10,7 @@ The structured source is monitor/feed.json in ariongj/HumanP, branch main.
 
 Suggested notification task instructions, for a native scheduler when available:
 
-Read the current monitor/feed.json from ariongj/HumanP main using the GitHub
+Read the current monitor/feed.json and monitor/ai-report.json from ariongj/HumanP main using the GitHub
 connector, and check the collector's latest run. This task only reads and alerts;
 it must not create another task, schedule, workflow, issue or external message.
 The collector starts at 10:00 Kosovo time. If it is running, wait for completion
@@ -18,12 +18,15 @@ using supported waits, then reread the feed. Do not summarize stale data as toda
 scan. If the run fails, coverage is incomplete, or last_successful_check is more
 than 36 hours old, notify the owner once per distinct failure until it changes.
 
-Keep a durable set of event IDs already notified. Notify only about unseen
-new/new_match/changed events for matched healthcare notices, relevant cancellations,
-deadline changes, or actionable collection failures. On the initial setup, treat
-existing events as the baseline unless the owner explicitly requests a backlog
-digest. Stay quiet when nothing meaningful changes. Persist the delivered IDs
-only after notification delivery succeeds; don't repeat unchanged notices.
+The owner explicitly requested one daily report. Deliver one concise digest per
+Kosovo calendar date after the collector completes, including an explicit "no new
+matches" result when appropriate. Use AI entries only when status is ready and
+their source fingerprints still match. Otherwise label the digest source-based
+and report the AI setup/failure status; never call it an AI-generated report.
+Keep durable delivered-date and event-ID state. Include unseen new/new_match/
+changed events, deadline changes and relevant cancellations. Do not repeat a
+digest already delivered for that date. No additional unchanged-status alerts.
+Persist delivery state only after delivery succeeds.
 
 For each alert give the title, institution, notice stage, publication date,
 deadline as displayed (timezone is not stated in portal metadata), match reasons,

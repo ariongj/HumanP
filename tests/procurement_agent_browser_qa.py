@@ -42,7 +42,16 @@ with sync_playwright() as p:
         page.get_by_role('navigation').wait_for(timeout=120000)
         nav('Agjenti i prokurimit')
         inbox=panel('Radha e mundësive dhe ndryshimeve')
+        page.get_by_role('tab',name='Agjenti dhe burimet',exact=True).click()
         expect(page.get_by_text('Njoftimet automatike në Codex ende nuk janë lidhur.',exact=False)).to_be_visible()
+        page.get_by_role('tab',name='Përmbledhja',exact=True).click()
+        cards=page.locator('.agent-priorities .agent-tender')
+        assert cards.count()>0
+        first_card=cards.first
+        first_card.locator('.agent-requirements>summary').click()
+        expect(first_card.locator('.agent-requirements')).to_have_attribute('open','')
+        assert first_card.locator('.agent-requirements section').count()>0
+        first_card.locator('.agent-requirements>summary').click()
         assert count(inbox)==len(FEED['notices'])
         export=list(csv.DictReader(payload(page.get_by_role('button',name='Eksporto pamjen',exact=True)).splitlines()))
         assert {r['notice_id'] for r in export}=={r['notice_id'] for r in FEED['notices']}
@@ -68,7 +77,16 @@ with sync_playwright() as p:
         expected_live=[merged[str(r['notice_id'])] for r in FEED['notices'] if merged[str(r['notice_id'])]['category_sq']==category]
         expected_all=[r for r in merged.values() if r['category_sq']==category and int(r['year'])==2026]
         assert count(inbox)==len(expected_live)
+        page.get_by_role('tab',name='Analitika',exact=True).click()
         assert sum(int(re.sub(r'\D','',x)) for x in panel('Përputhjet sipas kategorisë').locator('.bar-row b').all_text_contents()) ==len(expected_live)
+        page.get_by_role('tab',name='Raporti ditor',exact=True).click()
+        daily=json.loads(payload(page.get_by_role('button',name='Raporti ditor JSON',exact=True)))
+        assert all(r['category']==category for r in daily['procedures'])
+        assert daily['ai_status']=='not_configured'
+        assert daily['filters']['year']=='2026'
+        daily_html=payload(page.get_by_role('button',name='Raporti ditor HTML',exact=True))
+        assert 'Raporti i prokurimit' in daily_html and 'not_configured' in daily_html
+        checks.append('Daily briefing exports respect global scope and clearly distinguish source summaries from pending AI')
         nav('Sektori mjekësor');assert count(panel('Njoftimet'))==len(expected_all)
         nav('Raportet');page.get_by_role('tab',name='Njoftimet mjekësore',exact=True).click()
         report=json.loads(payload(page.get_by_role('button',name='Raporti JSON',exact=True)))
@@ -93,9 +111,16 @@ with sync_playwright() as p:
         assert page.get_by_role('dialog').locator('a[href^="https://e-prokurimi.rks-gov.net/"]').count()>=1
         page.get_by_role('button',name='Mbyll detajet',exact=True).click()
         page.get_by_role('textbox',name='Kërko njoftim, institucion, FPP ose arsye…',exact=True).fill('')
+        page.evaluate('window.scrollTo(0,0)')
         page.screenshot(path=str(ROOT/'artifacts/procurement-agent-desktop.png'))
+        page.get_by_role('tab',name='Raporti ditor',exact=True).click()
+        page.locator('.agent-report-heading').scroll_into_view_if_needed()
+        page.screenshot(path=str(ROOT/'artifacts/procurement-agent-daily-report.png'))
+        page.get_by_role('tab',name='Përmbledhja',exact=True).click()
         page.set_viewport_size({'width':375,'height':812});page.wait_for_timeout(500)
         assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'), 'Mobile page overflow'
+        assert page.locator('.agent-workspace .search').bounding_box()['width']>280, 'Mobile search must not collapse'
+        page.locator('.agent-priorities').scroll_into_view_if_needed()
         page.screenshot(path=str(ROOT/'artifacts/procurement-agent-mobile.png'))
         assert not errors,errors;assert not network,network
         result={'url':URL,'feed_notices':len(FEED['notices']),'merged_medical_notices':len(merged),'checks':checks+['Source inspection works; mobile fits; no runtime errors or data network calls'],'errors':errors,'dataNetworkRequests':network}

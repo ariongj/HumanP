@@ -75,3 +75,4 @@ test('presentation scenario keeps unknowns and losses and rounds break-even up',
 
 import "./entity-scope.test";
 import "./procurement-monitor.test";
+import "./agent-briefing.test";
