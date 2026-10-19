@@ -1,0 +1,50 @@
+name: HumanPlus daily procurement monitor
+on:
+  schedule:
+    - cron: '0 10 * * *'
+      timezone: Europe/Belgrade
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - monitor/profile.json
+      - scripts/procurement_monitor.py
+      - .github/workflows/procurement-monitor.yml
+permissions:
+  contents: read
+concurrency:
+  group: humanplus-procurement-monitor
+  cancel-in-progress: false
+jobs:
+  collect:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Verify collector logic
+        run: python3 -m unittest discover -s tests -p 'test_procurement_monitor.py'
+      - name: Read official public publications
+        id: collect
+        continue-on-error: true
+        run: python3 -u scripts/procurement_monitor.py
+      - name: Save data and source health, including partial failures
+        run: |
+          git add monitor/state.json monitor/feed.json
+          if ! git diff --cached --quiet; then
+            git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'Update public procurement monitor'
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
+      - name: Rebuild the existing HumanPlus panel
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --repo "$GITHUB_REPOSITORY" --ref main
+      - name: Report incomplete source collection
+        if: steps.collect.outcome != 'success'
+        run: exit 1

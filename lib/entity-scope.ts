@@ -20,6 +20,7 @@ export function createEntityScope(data:Record<string,Row|undefined>,selection:En
  const market=[...rows(data.market,'records'),...rows(data.market,'nationalRecords2024')];
  const medical=Object.values(data.medical||{}).filter(Array.isArray).flat().filter(r=>r&&typeof r==='object') as Row[];
  const noticeYears=new Map(rows(data.medical,'notices').map(r=>[String(r.notice_id),recordYear(r)]));
+ const noticeRows=new Map(rows(data.medical,'notices').map(r=>[String(r.notice_id),r]));
  const yearMatch=(r:Row,medicalRow=false)=>!year||(medicalRow&&recordYear(r)==='unknown'?noticeYears.get(String(r.notice_id))||'unknown':recordYear(r))===year;
  const brandProcedures=keys([...products,...mentions,...medicalProducts].filter(r=>brands(r).includes(brand)));
  const supplierProcedures=keys([...market,...medical,...products].filter(r=>suppliers.has(entityName(r.supplier))));
@@ -33,7 +34,7 @@ export function createEntityScope(data:Record<string,Row|undefined>,selection:En
  const supplierMatch=(r:Row,allowProcedure:boolean)=>!suppliers.size||(entityName(r.supplier)?suppliers.has(entityName(r.supplier)):allowProcedure&&hasProcedure(r,supplierProcedures));
  const matchMarket=(r:Row)=>yearMatch(r)&&categoryMatch(r,'market')&&brandMatch(r)&&supplierMatch(r,false);
  const matchProduct=(r:Row)=>yearMatch(r)&&categoryMatch(r,'products')&&(!brand||brands(r).includes(brand))&&supplierMatch(r,true);
- const matchMedical=(r:Row)=>yearMatch(r,true)&&categoryMatch(r,'medical')&&brandMatch(r)&&supplierMatch(r,true);
+ const matchMedical=(r:Row)=>{const linked={...noticeRows.get(String(r.notice_id)),...r};return yearMatch(linked,true)&&categoryMatch(linked,'medical')&&brandMatch(linked)&&supplierMatch(linked,true);};
  const matchMedicalProduct=(r:Row)=>matchMedical(r)&&(!brand||brands(r).includes(brand));
  const matchMention=(r:Row)=>yearMatch(r)&&categoryMatch(r,'market')&&(!brand||brands(r).includes(brand))&&supplierMatch(r,true);
  const evidence=[...market.filter(matchMarket),...products.filter(matchProduct),...mentions.filter(matchMention),...medical.filter(matchMedical)];

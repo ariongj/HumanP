@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "name": "HumanPlus · të gjitha prokurimet shëndetësore",
+  "timezone": "Europe/Belgrade",
+  "local_time": "10:00",
+  "cpv_prefixes": ["33", "851"],
+  "health_buyers": ["shskuk", "qkuk", "qkmf", "qmf", "qkmp", "qshm", "spital", "klinike", "klinika", "shendetes", "shendets", "mjekes", "mjeks", "ikshp", "akppm", "medicinal", "transfuz", "dentistr", "stomatolog"],
+  "sectors": [
+    {"category": "Barna dhe furnizime farmaceutike", "terms": ["barna", "barnave", "farmaceut", "medikament", "vaksin", "infuzion", "citostatik", "medicine", "lekovi", "lekova"]},
+    {"category": "Laborator dhe diagnostikë", "terms": ["laborator", "labarator", "reagens", "reagent", "diagnost", "analizator", "mikroskop", "hematolog", "imunokimi", "biokimi"]},
+    {"category": "Pajisje dhe materiale mjekësore", "terms": ["mjekesor", "mjekesore", "mjeksor", "kirurg", "anestez", "radiolog", "respirator", "inkubator", "dializ", "endoskop", "tomograf", "ultrazer", "ultrazeri", "dental", "stomatolog", "ortoped", "proteza", "pacient", "medicinsk", "zdravstven", "medical", "health", "karrige levizese"]},
+    {"category": "Shërbime dhe infrastrukturë shëndetësore", "terms": ["spital", "shendetes", "shendets", "shskuk", "qkuk", "qkmf", "qmf", "qkmp", "mjekesi", "mjeksi", "ambulanc", "klinike", "klinika", "bolnic"]}
+  ],
+  "non_health_context": ["veterinar", "bujqes", "forenzik", "inxhinier", "fakultetit te shkencave", "ambient", "ujit", "ujerave"],
+  "extra_keywords": [],
+  "excluded_keywords": []
+}

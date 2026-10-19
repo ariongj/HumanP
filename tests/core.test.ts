@@ -74,3 +74,4 @@ test('presentation preserves notice and procedure grains through filters',()=>{c
 test('presentation scenario keeps unknowns and losses and rounds break-even up',()=>{assert.deepEqual(presentationScenario(emptyPresentationInputs()),{revenue:null,variable:null,operating:null,unitMargin:null,breakEven:null});assert.deepEqual(presentationScenario({volume:100,price:25,unitCost:10,fixed:1001}),{revenue:2500,variable:1000,operating:499,unitMargin:15,breakEven:67});assert.equal(presentationScenario({volume:0,price:25,unitCost:10,fixed:1001}).operating,-1001);assert.equal(presentationScenario({volume:100,price:10,unitCost:10,fixed:1001}).breakEven,null);assert.throws(()=>presentationScenario({volume:-1,price:25,unitCost:10,fixed:1001}));assert.throws(()=>presentationScenario({volume:1e308,price:1e308,unitCost:1,fixed:1}));});
 
 import "./entity-scope.test";
+import "./procurement-monitor.test";

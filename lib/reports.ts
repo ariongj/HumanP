@@ -7,10 +7,15 @@ export type ReportSection={id:string;title:string;note:string;rows:Row[];columns
 export type ReportContext={entities?:EntitySelection;market?:Filters;product?:Filters;columnFilters?:Record<string,ColumnFilters>};
 export type Report={title:string;year:string;scope:string;generatedAt:string;sourceDate:string;sections:ReportSection[];filters:ReportContext};
 const columns=(pairs:string[][])=>pairs.map(([key,title])=>({key,title}));
-export function buildReport(kind:string,data:{market?:Row;budget?:Row;products?:Row},year:string,scope='',segment='',context:ReportContext={}):Report{
+export function buildReport(kind:string,data:{market?:Row;budget?:Row;products?:Row;medical?:Row},year:string,scope='',segment='',context:ReportContext={}):Report{
  const sections:ReportSection[]=[];
- const sourceDate='18.10.2026';
- if(kind==='budget'){
+ let sourceDate='18.10.2026';
+ if(kind==='medical'){
+  const rows=filterColumns((data.medical?.notices||[]).filter((r:Row)=>(!year||String(r.year??'unknown')===year)&&(!segment||r.category_sq===segment)),context.columnFilters?.medical||{});
+  const checks=rows.map((r:Row)=>r.last_checked_at).filter(Boolean).sort();
+  sourceDate='Paketa 18.10.2026'+(checks.length?' · Kontrolli i fundit i monitorit: '+checks.at(-1):'');
+  sections.push({id:'medical',title:'Njoftimet mjekësore dhe ndryshimet',note:'Njoftime unike sipas ID-së zyrtare nga paketa dhe monitori ditor. Fazat e së njëjtës procedurë mbeten të ndara. Afatet dhe statuset kërkojnë verifikim në dosjen zyrtare; monedha dhe pagesat nuk supozohen.',rows,columns:columns([['notice_date','Data'],['title','Njoftimi'],['buyer','Institucioni'],['category_sq','Kategoria'],['notice_type','Faza'],['deadline_displayed','Afati në portal'],['last_checked_at','Kontrolluar më'],['match_reasons','Arsyet e përputhjes'],['source_url','Burimi']]),chart:countsBy(rows,'category_sq'),unit:'njoftime',page:'medical',tab:'notices'});
+ }else if(kind==='budget'){
   for(const [id,title,valueKey,nameKey,note] of [
    ['central_budget','Ndarjet qendrore','total','organization','Buxheti fillestar i institucioneve shëndetësore të përfshira.'],
    ['municipal_budget','Ndarjet komunale','total','municipality','Ndarjet fillestare për shëndetësinë komunale.'],
@@ -27,7 +32,7 @@ export function buildReport(kind:string,data:{market?:Row;budget?:Row;products?:
   const rows=filterColumns(filterMarket(marketPopulation(data.market,scope),{...context.market,year,category:segment}),context.columnFilters?.market||{});
   sections.push({id:'market',title:'Prokurimi sipas kategorisë',note:scope==='national2024'?'Popullata kombëtare 2024, e veçantë nga nënbashkësia shëndetësore dhe kontekstuale. Numërohen shpërblime të publikuara.':'Historiku shëndetësor dhe kontekstual. Rekordet nuk provojnë pagesë ose madhësi tregu; klasifikimet tekstuale kërkojnë shqyrtim. Mbulimi 2026 është i pjesshëm.',rows,columns:columns([['year','Viti'],['reference','Referenca'],['title','Titulli'],['buyer','Institucioni'],['supplier','Operatori'],['category','Kategoria'],['source_url','Burimi']]),chart:groupMarket(rows,'category'),unit:'rekorde',page:'market'});
  }
- return {title:kind==='budget'?'Raporti i buxhetit dhe pagesave':kind==='products'?'Raporti i produkteve dhe markave':'Raporti i prokurimit',year:year==='unknown'?'Pa vit të dokumentuar':year||'Të gjitha vitet',scope:[kind==='market'?(scope==='national2024'?'Popullata kombëtare 2024':'Shëndetësi dhe kontekst'):'Burimet e paketës',segment].filter(Boolean).join(' · '),generatedAt:new Date().toISOString(),sourceDate,sections,filters:{entities:context.entities,market:kind==='market'?context.market:undefined,product:kind==='products'?context.product:undefined,columnFilters:Object.fromEntries(sections.map(s=>[s.id,context.columnFilters?.[s.id]||{}]))}};
+ return {title:kind==='medical'?'Raporti i njoftimeve mjekësore':kind==='budget'?'Raporti i buxhetit dhe pagesave':kind==='products'?'Raporti i produkteve dhe markave':'Raporti i prokurimit',year:year==='unknown'?'Pa vit të dokumentuar':year||'Të gjitha vitet',scope:[kind==='medical'?'Paketa dhe monitori ditor':kind==='market'?(scope==='national2024'?'Popullata kombëtare 2024':'Shëndetësi dhe kontekst'):'Burimet e paketës',segment].filter(Boolean).join(' · '),generatedAt:new Date().toISOString(),sourceDate,sections,filters:{entities:context.entities,market:kind==='market'?context.market:undefined,product:kind==='products'?context.product:undefined,columnFilters:Object.fromEntries(sections.map(s=>[s.id,context.columnFilters?.[s.id]||{}]))}};
 }
 const escapeHTML=(value:unknown)=>String(value===null||value===undefined||value===''?'E panjohur':typeof value==='object'?JSON.stringify(value):value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
 export function reportHTML(report:Report){
