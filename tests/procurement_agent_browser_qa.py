@@ -10,6 +10,7 @@ ROOT=pathlib.Path(__file__).resolve().parents[2]
 URL=os.environ.get('PANEL_URL','http://127.0.0.1:62729/#agent')
 ACCOUNT=json.loads((ROOT/'artifacts/HumanPlus-Login.private.json').read_text())
 FEED=json.loads((ROOT/'app/monitor/feed.json').read_text())
+AI_REPORT=json.loads((ROOT/'app/monitor/ai-report.json').read_text())
 ARCHIVE=json.loads((ROOT/'private/budget-2024-objects/data/medical.json').read_text())['notices']
 merged={str(r['notice_id']):r for r in ARCHIVE}
 for r in FEED['notices']:
@@ -41,6 +42,23 @@ with sync_playwright() as p:
         page.get_by_role('button',name='Hyr në panel',exact=True).click()
         page.get_by_role('navigation').wait_for(timeout=120000)
         nav('Agjenti i prokurimit')
+        if AI_REPORT['status']=='ready':
+            expect(page.get_by_text('Raporti ditor AI është gati',exact=True)).to_be_visible()
+            page.get_by_role('button',name='Lexo raportin ditor',exact=True).click()
+            expect(page.get_by_role('tab',name='Raporti ditor',exact=True)).to_have_attribute('aria-selected','true')
+            expect(page.locator('.agent-report-notice')).to_have_count(0)
+            complete=json.loads(payload(page.get_by_role('button',name='Raporti ditor JSON',exact=True)))
+            interpreted=[r['ai_interpretation'] for r in complete['procedures'] if r['ai_interpretation']]
+            assert {r['notice_id'] for r in interpreted}=={r['notice_id'] for r in AI_REPORT['entries']}
+            assert page.locator('.agent-report-cards .agent-ai-action').count()==len(interpreted)
+            for entry in interpreted:
+                expect(page.get_by_text(entry['why_match'],exact=True)).to_be_visible()
+                expect(page.get_by_text(entry['next_step'],exact=True)).to_be_visible()
+            assert page.evaluate("localStorage.getItem('humanplus-daily-report-read-v1')")==AI_REPORT['generated_at']
+            nav('Përmbledhja')
+            expect(page.locator('.agent-report-notice')).to_have_count(0)
+            nav('Agjenti i prokurimit')
+            checks.append('New daily AI report alert opens the report, persists read state, and all generated analyses render and export with matching source IDs')
         inbox=panel('Radha e mundësive dhe ndryshimeve')
         page.get_by_role('tab',name='Agjenti dhe burimet',exact=True).click()
         expect(page.get_by_text('Njoftimet automatike në Codex ende nuk janë lidhur.',exact=False)).to_be_visible()
@@ -82,11 +100,12 @@ with sync_playwright() as p:
         page.get_by_role('tab',name='Raporti ditor',exact=True).click()
         daily=json.loads(payload(page.get_by_role('button',name='Raporti ditor JSON',exact=True)))
         assert all(r['category']==category for r in daily['procedures'])
-        assert daily['ai_status']=='not_configured'
+        assert daily['ai_status']==AI_REPORT['status']
+        assert all(r['source_notice_id']==r['ai_interpretation']['notice_id'] for r in daily['procedures'] if r['ai_interpretation'])
         assert daily['filters']['year']=='2026'
         daily_html=payload(page.get_by_role('button',name='Raporti ditor HTML',exact=True))
-        assert 'Raporti i prokurimit' in daily_html and 'not_configured' in daily_html
-        checks.append('Daily briefing exports respect global scope and clearly distinguish source summaries from pending AI')
+        assert 'Raporti i prokurimit' in daily_html and AI_REPORT['status'] in daily_html
+        checks.append('Daily briefing HTML and JSON exports respect global scope and include only matching, source-validated AI analyses')
         nav('Sektori mjekësor');assert count(panel('Njoftimet'))==len(expected_all)
         nav('Raportet');page.get_by_role('tab',name='Njoftimet mjekësore',exact=True).click()
         report=json.loads(payload(page.get_by_role('button',name='Raporti JSON',exact=True)))
