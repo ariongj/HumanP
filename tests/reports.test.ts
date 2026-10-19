@@ -15,7 +15,7 @@ test('reports keep national and health populations separate and reconcile filter
 });
 test('budget reports never combine payments with allocations or parent and child totals',()=>{
  const data={budget:{central_budget:[{year:'2024',total:100}],municipal_budget:[{year:'2024',total:50}],execution_2023:[{year:'2024',row_type:'organization_total',payments_eur:80},{year:'2024',row_type:'economic_category',payments_eur:80}],audited_execution_2024:[{year:'2024',row_type:'organization_total',payments_eur:82}]}};
- assert.deepEqual(buildReport('budget',data,'2024').sections.map(s=>s.total),[100,50,80,82]);assert(buildReport('budget',data,'2025').sections.every(s=>s.total===null&&s.rows.length===0));assert.throws(()=>buildReport('budget',data,''));
+ assert.deepEqual(buildReport('budget',data,'2024').sections.map(s=>s.total),[100,50,80,82]);assert(buildReport('budget',data,'2025').sections.every(s=>s.total===null&&s.rows.length===0));assert.deepEqual(buildReport('budget',data,'').sections.map(s=>s.total),[100,50,80,82]);
 });
 test('product reports preserve missing years, review labels and source evidence without aggregating lot prices',()=>{
  const products={records:[{brand:'A',year:2024,model:'One',reported_procurement_value:100},{brand:'A (to verify)',year:null,model:'Two',reported_procurement_value:100}]};
