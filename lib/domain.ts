@@ -1,3 +1,4 @@
+import {filterColumns,parseColumnFilters} from './column-filters';
 export type Row = Record<string, any>;
 export type Filters = Record<string, string>;
 export const marketYears=(rows:Row[])=>Array.from(new Set(rows.map(r=>String(r.year||'')).filter(Boolean))).sort();
@@ -18,7 +19,7 @@ export function filterMarket(rows: Row[], filters: Filters) {
   const hasRange=Boolean(filters.minAmount||filters.maxAmount);
   const min=filters.minAmount?Number(filters.minAmount):null,max=filters.maxAmount?Number(filters.maxAmount):null;
   if((min!==null&&(!Number.isFinite(min)||min<0))||(max!==null&&(!Number.isFinite(max)||max<0))||(min!==null&&max!==null&&min>max))return [];
-  return rows.filter(r=>{
+  return filterColumns(rows,parseColumnFilters(filters.columns)).filter(r=>{
     const haystack=[r.title,r.full_tender_title,r.buyer,r.supplier,r.reference,r.row_key].map(x=>String(x??'')).join(' ').toLocaleLowerCase('sq');
     if(words.length&&!(filters.searchMode==='any'?words.some(w=>haystack.includes(w)):words.every(w=>haystack.includes(w))))return false;
     for(const [key,values] of Object.entries(choices)){
@@ -30,7 +31,7 @@ export function filterMarket(rows: Row[], filters: Filters) {
     if(hasRange&&(r.value_unit!=='EUR'||amount===null||(min!==null&&amount<min)||(max!==null&&amount>max)))return false;
     if(filters.amountPresence==='missing'&&amount!==null||filters.amountPresence==='known'&&amount===null)return false;
     if(filters.linkState==='usable'&&!r.source_link_usable||filters.linkState==='missing'&&r.source_link_usable)return false;
-    return Object.entries(filters).every(([key,value])=>!value||key.endsWith('Any')||['scope','q','page','searchMode','flagMode','minAmount','maxAmount','amountPresence','linkState'].includes(key)||(key==='month'?/^\d{4}-(0[1-9]|1[0-2])$/.test(value)&&String(r.source_date||'').slice(0,7)===value:key==='flag'?(r.audit_flags||[]).includes(value):key==='status'?(value==='duplicate'?r.duplicate_flag==='True':value==='group'?r.group_label==='True':value==='link'?!r.source_link_usable:true):String(r[key]||'E papërcaktuar')===value));
+    return Object.entries(filters).every(([key,value])=>!value||key.endsWith('Any')||['columns','scope','q','page','searchMode','flagMode','minAmount','maxAmount','amountPresence','linkState'].includes(key)||(key==='month'?/^\d{4}-(0[1-9]|1[0-2])$/.test(value)&&String(r.source_date||'').slice(0,7)===value:key==='flag'?(r.audit_flags||[]).includes(value):key==='status'?(value==='duplicate'?r.duplicate_flag==='True':value==='group'?r.group_label==='True':value==='link'?!r.source_link_usable:true):String(r[key]||'E papërcaktuar')===value));
   });
 }
 export function marketSummary(rows: Row[]) {

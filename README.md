@@ -10,6 +10,16 @@ The static GitHub site uses a strong generated credential to derive an AES-256-G
 
 The cryptographic APIs follow the [Web Crypto key derivation](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/deriveKey) and [AES-GCM parameter](https://developer.mozilla.org/en-US/docs/Web/API/AesGcmParams) documentation.
 
+## Connected record workspace
+
+Tables support saved column order, widths, visibility, density, grouping and a pinned first column. Drag a column edge or use its arrow keys to resize it. Layout preferences stay in the browser profile. Procurement opens with its records; the analytical view uses the same filters.
+
+Column filters in procurement, budgets, products, brands, medicine and licence registries, medical notices, partners, documents, reports and all source datasets feed the parent view. Charts, headline counts and exports therefore use the same filtered records. Procurement saved views retain column filters and population scope. Product and procurement selections can open a report and return to the analysis with their filters.
+
+Record details include **Lidhjet e rekordit**. Links use published procedure/notice IDs, complete source names or explicit document references. Alternative procurement populations are deduplicated only by stable row ID for this connection view. Brand/model mentions do not create inferred manufacturer links; consortium names are retained whole. A record can be followed into related evidence and back without changing the original page filters. Budget tables and notice stages retain their separate bases.
+
+`tests/connected_workspace_browser_qa.py` checks layouts, saved filters, chart/CSV/report reconciliation, evidence traversal and mobile containment with the protected preloaded package.
+
 ## Data, reports, products and brands
 
 The overview links directly to presentation, data, reports, products and brands. **Të dhënat** indexes all 17 embedded datasets and exposes their nested tables, search, source inspection, filtered CSV and complete JSON downloads. Record populations and overlapping source tables remain separate.
@@ -128,7 +138,7 @@ Monthly finance scenarios retain 39 periods and three source cases, the partial 
 
 ## Verification
 
-`npm test` runs 35 synthetic calculation, filter, source-link, API-contract and authenticated-decryption tests. When the original private workbook JSON exists in the sibling private bundle, an independent allowlisted evaluator checks all 39 periods in all three scenarios against workbook formulas. That one test is explicitly skipped on public CI, where the private source is absent.
+`npm test` runs 40 synthetic calculation, filter, source-link, API-contract and authenticated-decryption tests. When the original private workbook JSON exists in the sibling private bundle, an independent allowlisted evaluator checks all 39 periods in all three scenarios against workbook formulas. That one test is explicitly skipped on public CI, where the private source is absent.
 
 `tests/protected_panel_browser_qa.py` checks the deployed password-protected edition with a fresh browser: wrong credentials rejected, correct credentials open every dataset without import, linked evidence, five chapters at 320px, editable scenarios, manual actuals, hash-matched original documents, reload and logout. Set `PANEL_URL` for a live HTTPS check. Credentials and expected source data are read from local files outside the repository. `scripts/check-pages.mjs` checks the encrypted snapshot digest, envelope, exact script hash, no plaintext package and no external dependencies. Screenshots and test receipts stay outside the repository.
 
