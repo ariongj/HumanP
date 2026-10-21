@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
   "status": "ready",
-  "generated_at": "2026-10-20T13:21:36.275216+00:00",
-  "source_checked_at": "2026-10-20T13:14:19+00:00",
+  "generated_at": "2026-10-21T13:27:22.187655+00:00",
+  "source_checked_at": "2026-10-21T13:22:34+00:00",
   "model": "gpt-6.1-sol",
   "entries": [
     {
       "notice_id": "4337434",
-      "why_match": "Titulli për aparaturë laboratorike në QKMF dhe CPV-ja për analizator hematologjie japin lidhje të drejtpërdrejtë me interesin për laborator dhe pajisje mjekësore.",
-      "next_step": "Shqyrtoni dosjen dhe paramasën për të verifikuar pajisjet dhe specifikimet e kërkuara.",
+      "why_match": "Titulli për aparaturë laboratorike në QKMF dhe CPV-ja për analizator hematologjie japin lidhje të drejtpërdrejtë me interesin për diagnostikë dhe pajisje mjekësore.",
+      "next_step": "Shqyrtoni paramasën dhe dosjen për të konfirmuar pajisjet dhe specifikimet e kërkuara.",
       "evidence_gaps": [
         "Përmbajtja e bashkëngjitjeve dhe kërkesat nuk janë nxjerrë.",
-        "Nuk ka prova për kapacitetin ose kualifikimin e HumanPlus."
+        "Nuk dokumentohen kapacitetet apo përshtatshmëria e HumanPlus për pjesëmarrje."
       ],
       "fingerprint": "8e3c721302a0bb2190f54afc9be2c84922cc3dea2515dda41549c61a3a378a66",
       "context_fingerprints": {
@@ -20,26 +20,40 @@
       "source_url": "https://e-prokurimi.rks-gov.net/SPIN_PROD/application/ipn/DocumentManagement/DokumentPodaciFrm.aspx?id=4337434"
     },
     {
-      "notice_id": "4333158",
-      "why_match": "Servisimi i pajisjeve të imunohematologjisë lidhet drejtpërdrejt me diagnostikën laboratorike; CPV-ja e publikuar mbulon pajisje mjekësore dhe laboratorike.",
-      "next_step": "Kontrolloni dosjen për fushën e servisimit dhe kushtet për personelin teknik.",
+      "notice_id": "4334260",
+      "why_match": "Titulli për materiale mjekësore për laboratorin dhe repartet, së bashku me CPV-në për agjentë diagnostikues, lidhet drejtpërdrejt me profilin shëndetësor.",
+      "next_step": "Kontrolloni përshkrimin e çmimit për të identifikuar artikujt dhe ndarjen eventuale në lote.",
       "evidence_gaps": [
-        "Nuk janë nxjerrë specifikimet dhe kushtet e shërbimit.",
-        "Nuk është dokumentuar aftësia e HumanPlus për servisimin e pajisjeve përkatëse."
+        "Mungojnë lista e verifikuar e artikujve, specifikimet dhe kërkesat e pjesëmarrjes.",
+        "Nuk është verifikuar statusi i çdo loti apo aftësia furnizuese e HumanPlus."
       ],
-      "fingerprint": "7e8890f0d25e538f4c68156fb7f902a62049409dea1cb1cffd412d5addafefab",
+      "fingerprint": "8e1445face6a760dcb620b8a5c424e3b81d872440bd79dba1555ed0d078d95c1",
       "context_fingerprints": {
-        "4333158": "7e8890f0d25e538f4c68156fb7f902a62049409dea1cb1cffd412d5addafefab"
+        "4334260": "8e1445face6a760dcb620b8a5c424e3b81d872440bd79dba1555ed0d078d95c1"
       },
-      "source_url": "https://e-prokurimi.rks-gov.net/SPIN_PROD/application/ipn/DocumentManagement/DokumentPodaciFrm.aspx?id=4333158"
+      "source_url": "https://e-prokurimi.rks-gov.net/SPIN_PROD/application/ipn/DocumentManagement/DokumentPodaciFrm.aspx?id=4334260"
+    },
+    {
+      "notice_id": "4327133",
+      "why_match": "Reagencat laboratorike në titull dhe CPV-ja për agjentë diagnostikues tregojnë përputhje të drejtpërdrejtë tematike me interesin për laborator dhe diagnostikë.",
+      "next_step": "Shqyrtoni përshkrimin e çmimit për llojet e reagencave dhe çdo kusht të shprehur të përputhshmërisë me aparaturat.",
+      "evidence_gaps": [
+        "Nuk janë nxjerrë specifikimet, sasitë apo kushtet nga dokumentet.",
+        "Nuk dokumentohen produktet, të drejtat e furnizimit apo kualifikimi i HumanPlus."
+      ],
+      "fingerprint": "f6d3d265455215de6d268bfba520e5ad9ed4d718c6b947b3705730d52dde6a5f",
+      "context_fingerprints": {
+        "4327133": "f6d3d265455215de6d268bfba520e5ad9ed4d718c6b947b3705730d52dde6a5f"
+      },
+      "source_url": "https://e-prokurimi.rks-gov.net/SPIN_PROD/application/ipn/DocumentManagement/DokumentPodaciFrm.aspx?id=4327133"
     },
     {
       "notice_id": "4334606",
-      "why_match": "Titulli tregon shërbime të mjekut specialist radiolog, pra interes të drejtpërdrejtë për shërbime shëndetësore, jo furnizim me pajisje siç sugjeron kategoria.",
-      "next_step": "Verifikoni në dosje përshkrimin e shërbimit dhe kriteret për specialistin radiolog.",
+      "why_match": "Titulli sinjalizon shërbime specialistike radiologjie, të rëndësishme për interesin në shërbime shëndetësore; kategorizimi si pajisje dhe CPV-ja e publikuar nuk e sqarojnë këtë objekt.",
+      "next_step": "Kontrolloni dosjen për të konfirmuar objektin e shërbimit dhe kriteret për personelin specialist.",
       "evidence_gaps": [
-        "Mospërputhja mes titullit, kategorisë dhe CPV-së kërkon sqarim.",
-        "Kërkesat dhe disponueshmëria e personelit të kualifikuar nga HumanPlus nuk janë dokumentuar."
+        "Mospërputhja ndërmjet titullit, kategorisë dhe CPV-së mbetet e pasqaruar.",
+        "Kërkesat dhe disponueshmëria e personelit të kualifikuar të HumanPlus nuk dokumentohen."
       ],
       "fingerprint": "d11786a2ea1b40815e8f4ff1af3874901b773ff86956c8242f3cda2a29bbed03",
       "context_fingerprints": {
@@ -49,11 +63,11 @@
     },
     {
       "notice_id": "4338901",
-      "why_match": "Azoti i lëngshëm dhe enët kriogjenike për një spital meritojnë shqyrtim për përdorim të mundshëm shëndetësor; përdorimi konkret nuk përcaktohet nga metadata.",
-      "next_step": "Kontrolloni specifikimet në dosje për përdorimin, cilësinë dhe kushtet e furnizimit.",
+      "why_match": "Furnizimi me azot të lëngshëm dhe enë kriogjenike për spital meriton shqyrtim për përdorim të mundshëm shëndetësor ose laboratorik; përdorimi konkret nuk provohet nga metadata.",
+      "next_step": "Kontrolloni dosjen dhe përshkrimin e çmimeve për përdorimin e synuar dhe specifikimet e gazit e të enëve.",
       "evidence_gaps": [
-        "Nuk janë nxjerrë specifikimet e gazit dhe enëve.",
-        "Nuk ka prova për kapacitetin furnizues ose kualifikimin e HumanPlus."
+        "Mungojnë specifikimet dhe kushtet e furnizimit nga dokumentet.",
+        "Nuk dokumentohen kapacitetet apo autorizimet eventualisht të nevojshme të HumanPlus."
       ],
       "fingerprint": "af442af4b2b7ce78472d84aa2cd32d7bf0f6e80e867cedbe314d839c8de8e309",
       "context_fingerprints": {
@@ -62,26 +76,12 @@
       "source_url": "https://e-prokurimi.rks-gov.net/SPIN_PROD/application/ipn/DocumentManagement/DokumentPodaciFrm.aspx?id=4338901"
     },
     {
-      "notice_id": "4337342",
-      "why_match": "Mirëmbajtja e TI-së në një institucion shëndetësor është mbështetje infrastrukturore, jo përputhje e drejtpërdrejtë me produkte mjekësore.",
-      "next_step": "Shqyrtoni paramasën e TI-së për të përcaktuar pajisjet dhe shërbimet që mbulohen.",
-      "evidence_gaps": [
-        "Fusha teknike dhe kriteret nuk janë nxjerrë nga bashkëngjitjet.",
-        "Nuk është dokumentuar kapaciteti i HumanPlus për shërbime TI."
-      ],
-      "fingerprint": "a658268d006b24538fb3d8938265fd2562e28ca3b72c673986c56cbaf32f4f0d",
-      "context_fingerprints": {
-        "4337342": "a658268d006b24538fb3d8938265fd2562e28ca3b72c673986c56cbaf32f4f0d"
-      },
-      "source_url": "https://e-prokurimi.rks-gov.net/SPIN_PROD/application/ipn/DocumentManagement/DokumentPodaciFrm.aspx?id=4337342"
-    },
-    {
       "notice_id": "4328915",
-      "why_match": "Blerësi është institucion i shëndetësisë publike, por kamerat e sigurisë janë mbështetje institucionale dhe jo pajisje mjekësore të konfirmuara.",
-      "next_step": "Lexoni dosjen dhe përgjigjen e publikuar për të verifikuar objektin dhe specifikimet e kamerave.",
+      "why_match": "Blerësi është institucion i shëndetësisë publike, por kamerat e sigurisë janë mbështetje institucionale, jo përputhje e drejtpërdrejtë me produkte mjekësore.",
+      "next_step": "Shqyrtoni dosjen dhe përgjigjen e bashkëngjitur për të përcaktuar fushën teknike të furnizimit.",
       "evidence_gaps": [
-        "Përmbajtja e dokumenteve dhe kërkesat nuk janë nxjerrë.",
-        "Nuk është provuar përputhja e kapaciteteve të HumanPlus me këtë furnizim."
+        "Nuk janë verifikuar specifikimet dhe sqarimet e dokumenteve.",
+        "Nuk dokumentohet aftësia e HumanPlus për sisteme sigurie apo plotësimi i kritereve."
       ],
       "fingerprint": "539c3ef43e641c3b4b2293e54dbf6603ce0df35684e34bd00524120258b8de5b",
       "context_fingerprints": {
@@ -90,26 +90,26 @@
       "source_url": "https://e-prokurimi.rks-gov.net/SPIN_PROD/application/ipn/DocumentManagement/DokumentPodaciFrm.aspx?id=4328915"
     },
     {
-      "notice_id": "4339542",
-      "why_match": "Përfshirja e QKMF-së krijon lidhje të tërthortë me shëndetësinë, por objekti është furnizim dhe shërbim gomash për disa njësi, jo produkt mjekësor.",
-      "next_step": "Kontrolloni dosjen për ndarjen eventuale në lote dhe pjesën që u përket automjeteve të QKMF-së.",
+      "notice_id": "4337678",
+      "why_match": "Titulli për sistem kamerash në IML jep arsye për shqyrtim si mbështetje infrastrukturore e mundshme; nuk përshkruan produkt apo shërbim klinik të drejtpërdrejtë.",
+      "next_step": "Kontrolloni dosjen për të konfirmuar mjedisin e përdorimit dhe shtrirjen e instalimit, servisimit e mirëmbajtjes.",
       "evidence_gaps": [
-        "Ndarja në lote dhe statusi i tyre nuk përcaktohen nga metadata.",
-        "Kërkesat dhe kapaciteti përkatës i HumanPlus nuk janë dokumentuar."
+        "Lidhja konkrete me shërbimet shëndetësore nuk vërtetohet nga të dhënat e dhëna.",
+        "Mungojnë kërkesat teknike dhe dëshmitë për kapacitetet përkatëse të HumanPlus."
       ],
-      "fingerprint": "3f31fb7adee58cbdd78c5c9f26957634b42f130fd51a3bfa2e89565aa8ada050",
+      "fingerprint": "54d583a703ed8e21314bf99c76b554728d5cfa3813d98c66f6bc236c3d8dc638",
       "context_fingerprints": {
-        "4339542": "3f31fb7adee58cbdd78c5c9f26957634b42f130fd51a3bfa2e89565aa8ada050"
+        "4337678": "54d583a703ed8e21314bf99c76b554728d5cfa3813d98c66f6bc236c3d8dc638"
       },
-      "source_url": "https://e-prokurimi.rks-gov.net/SPIN_PROD/application/ipn/DocumentManagement/DokumentPodaciFrm.aspx?id=4339542"
+      "source_url": "https://e-prokurimi.rks-gov.net/SPIN_PROD/application/ipn/DocumentManagement/DokumentPodaciFrm.aspx?id=4337678"
     },
     {
       "notice_id": "4337863",
-      "why_match": "Sinjali për shqyrtim vjen nga klasifikimi CPV, por titulli për litarë dhe blerësi energjetik nuk konfirmojnë lidhje shëndetësore.",
-      "next_step": "Krahasoni specifikimet e furnizimit me CPV-në e publikuar për të sqaruar mospërputhjen.",
+      "why_match": "Vetëm CPV-ja e publikuar për instrumente kontrolli jep sinjal për shqyrtim; titulli për litarë dhe blerësi energjetik nuk dëshmojnë përdorim shëndetësor.",
+      "next_step": "Krahasoni listën e furnizimeve me dosjen dhe përgjigjet sqaruese për të zgjidhur mospërputhjen titull–CPV.",
       "evidence_gaps": [
-        "Nuk ka përdorim shëndetësor të konfirmuar.",
-        "Specifikimet, sqarimet dhe kriteret nuk janë nxjerrë; kualifikimi i HumanPlus mbetet i paverifikuar."
+        "Objekti real dhe lidhja me shëndetësinë mbeten të pakonfirmuara.",
+        "Nuk janë nxjerrë kërkesat dhe nuk dokumentohet përshtatshmëria e HumanPlus."
       ],
       "fingerprint": "8f71d350bbdb3aef3bf397069d8d08c2f138a0fd1cd8648ba8cfa5d9526742c5",
       "context_fingerprints": {
@@ -119,12 +119,12 @@
     }
   ],
   "usage": {
-    "input_tokens": 2090,
-    "output_tokens": 1285,
-    "total_tokens": 3375
+    "input_tokens": 2015,
+    "output_tokens": 1393,
+    "total_tokens": 3408
   },
-  "date": "2026-10-20",
-  "last_api_attempt_date": "2026-10-20",
-  "attempted_at": "2026-10-20T13:21:05.138578+00:00",
+  "date": "2026-10-21",
+  "last_api_attempt_date": "2026-10-21",
+  "attempted_at": "2026-10-21T13:26:54.713185+00:00",
   "note": "AI interpretation of public metadata. Requirements and eligibility must be checked against the official dossier."
 }
