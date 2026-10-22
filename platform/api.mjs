@@ -5,6 +5,7 @@ import {fileURLToPath} from 'node:url';
 import {id, transaction, audit, createCompany} from './store.mjs';
 import {hashPassword, verifyPassword, token, hash, rateLimit} from './auth.mjs';
 import {listReports} from './reports.mjs';
+import {collectionStatus} from './collection-job.mjs';
 const publicRoot=fileURLToPath(new URL('./public/',import.meta.url));
 const fail=(status,message)=>{throw Object.assign(new Error(message),{status});};
 const text=(value,max=200,required=true)=>{
@@ -151,9 +152,9 @@ export function createHandler({db,origin,feedProvider=()=>({feed:null,aiReport:n
         }audit(db,s.company_id,s.user_id,'member.'+input.status,target.user_id);});return json(res,200,{ok:true});
       }
       if(path==='/api/opportunities'&&method==='GET'){
-        const {feed}=feedProvider();const company=db.prepare('SELECT * FROM companies WHERE id=?').get(s.company_id);const terms=JSON.parse(company.interests_json).map(x=>x.toLowerCase());
+        const {feed,aiReport}=feedProvider();const company=db.prepare('SELECT * FROM companies WHERE id=?').get(s.company_id);const terms=JSON.parse(company.interests_json).map(x=>x.toLowerCase());
         const notices=company.sector==='healthcare'?noticesFrom(feed).filter(n=>!terms.length||terms.some(t=>(n.title+' '+n.buyer+' '+n.category_sq).toLowerCase().includes(t))).map(n=>({id:n.notice_id,title:n.title||n.listed_title,buyer:n.buyer,deadline:n.deadline_displayed||null,url:n.source_url,category:n.category_sq,score:null,reasons:n.match_reasons||[],classification:n.evidence_classification,requirements:n.gaps||'Check the official tender dossier.'})):[];
-        return json(res,200,{sourceCheckedAt:feed?.last_successful_check||null,coverageNote:company.sector==='healthcare'?(feed?.coverage_note||'Healthcare notices from the official Kosovo portal. Metadata only; verify eligibility in the dossier.'):'This pilot source covers healthcare. Coverage for your sector is not connected yet.',notices});
+        return json(res,200,{sourceCheckedAt:feed?.last_successful_check||null,sourceStatus:feed?.run?.status||'unavailable',collection:collectionStatus(db,now()),aiStatus:aiReport?.status||'unavailable',aiSourceCheckedAt:aiReport?.source_checked_at||null,coverageNote:company.sector==='healthcare'?(feed?.coverage_note||'Healthcare notices from the official Kosovo portal. Metadata only; verify eligibility in the dossier.'):'This pilot source covers healthcare. Coverage for your sector is not connected yet.',notices});
       }
       if(path==='/api/workspaces'&&method==='GET')return json(res,200,{workspaces:db.prepare('SELECT id FROM workspaces WHERE company_id=? ORDER BY updated_at DESC').all(s.company_id).map(w=>workspace(s,w.id))});
       if(path==='/api/workspaces'&&method==='POST'){

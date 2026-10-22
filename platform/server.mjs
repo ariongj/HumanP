@@ -2,7 +2,7 @@ import {createServer} from 'node:http';
 import {openStore,id,createCompany} from './store.mjs';
 import {hashPassword} from './auth.mjs';
 import {createHandler} from './api.mjs';
-import {readSource,refreshSource} from './source.mjs';
+import {readSource} from './source.mjs';
 import {config} from './config.mjs';
 const settings=config();
 process.umask(0o077);
@@ -18,5 +18,4 @@ if(db.prepare('SELECT count(*) AS count FROM users').get().count===0){
 }
 const server=createServer({requestTimeout:30000,headersTimeout:10000,maxHeaderSize:16384},createHandler({db,origin:settings.origin,secure:settings.production,feedProvider:()=>readSource(db)}));
 server.listen(settings.port,settings.host,()=>console.log('HumanPlus workspace listening'));
-refreshSource(db).catch(()=>console.error('Initial source refresh failed'));
 for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>server.close(()=>{db.close();process.exit(0);}));

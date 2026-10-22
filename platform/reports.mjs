@@ -103,14 +103,27 @@ function verifiedAI(aiReport, row, related, checked) {
   if (!context || typeof context !== 'object' || Array.isArray(context) || Object.keys(context).length !== related.length || related.some(r => !r.fingerprint || context[String(r.notice_id)] !== r.fingerprint)) return null;
   return {why_match:typeof entry.why_match === 'string' ? entry.why_match : null,next_step:typeof entry.next_step === 'string' ? entry.next_step : null,evidence_gaps:strings(entry.evidence_gaps),source_profile:'HumanPlus source profile; company fit and qualification require independent verification.'};
 }
+function reportAIState(body,aiReport) {
+  const count=body.opportunities.filter(row=>row.ai_interpretation).length;
+  body.ai_verified_count=count;
+  body.ai_generated_at=count&&typeof aiReport?.generated_at==='string'&&Number.isFinite(Date.parse(aiReport.generated_at))?aiReport.generated_at:null;
+  if(body.status==='insufficient_coverage') {body.ai_status='not_applicable';body.ai_note='The connected source does not cover this sector.';}
+  else if(body.status==='source_unavailable') {body.ai_status='source_unavailable';body.ai_note='AI interpretation is unavailable while the source check is unavailable.';}
+  else if(count) {body.ai_status='verified';body.ai_note=`${count} displayed candidates have fingerprint-verified AI interpretation. Other candidates use source metadata and matching rules.`;}
+  else if(!aiReport) {body.ai_status='pending';body.ai_note='Daily AI analysis has not arrived. This report uses source metadata and matching rules.';}
+  else if(aiReport.status!=='ready') {body.ai_status='unavailable';body.ai_note='Daily AI analysis is not ready. This report uses source metadata and matching rules.';}
+  else if(aiReport.source_checked_at!==body.source_checked_at) {body.ai_status='source_mismatch';body.ai_note='AI analysis belongs to a different source check and was excluded.';}
+  else {body.ai_status='no_verified_matches';body.ai_note='No AI interpretation passed source verification for the displayed candidates.';}
+  return body;
+}
 function candidateReport(company, clock, now, feed, aiReport) {
   const state = sourceState(feed,now,clock.timezone), terms = sectorTerms(company.sector), keywords = interests(company);
   const body = {company_id:company.id,report_date:clock.date,title:`Daily procurement report · ${company.name}`,timezone:clock.timezone,scheduled_local_time:clock.scheduled,generated_at:now.toISOString(),updated_at:now.toISOString(),source_checked_at:state.checked,status:'ready',summary:'',coverage:{sector:company.sector,available_sector:'healthcare',complete:false,source_url:officialLink(feed?.source_url),note:feed?.coverage_note || 'The available feed covers healthcare public metadata, not all sectors or all tender documents.',freshness:state},opportunities:[],counts:{source_notices:Array.isArray(feed?.notices)?feed.notices.length:0,matched_procedures:0,actionable:0,shown:0,requires_status_review:0},warnings:['A match is research evidence, not proof of qualification or permission to represent a brand.','Delivery is to this application inbox; ChatGPT delivery is not connected.']};
   if (terms === null) {
-    body.status='insufficient_coverage';body.summary='This sector is not covered by the connected healthcare feed. Absence of results does not mean no opportunities exist.';body.counts.actionable=null;return body;
+    body.status='insufficient_coverage';body.summary='This sector is not covered by the connected healthcare feed. Absence of results does not mean no opportunities exist.';body.counts.actionable=null;return reportAIState(body,aiReport);
   }
-  if (keywords === null) {body.status='source_unavailable';body.summary='Company interest settings are invalid. Matching was not performed.';return body;}
-  if (!state.fresh) {body.status='source_unavailable';body.summary=`Daily source unavailable: ${state.reason} No empty-success report was produced.`;body.counts.actionable=null;return body;}
+  if (keywords === null) {body.status='source_unavailable';body.summary='Company interest settings are invalid. Matching was not performed.';return reportAIState(body,aiReport);}
+  if (!state.fresh) {body.status='source_unavailable';body.summary=`Daily source unavailable: ${state.reason} No empty-success report was produced.`;body.counts.actionable=null;return reportAIState(body,aiReport);}
   const groups = new Map();
   for (const row of feed.notices) {const key=procedure(row);groups.set(key,[...(groups.get(key)||[]),row]);}
   const actionable=[];
@@ -136,10 +149,25 @@ function candidateReport(company, clock, now, feed, aiReport) {
   actionable.sort((a,b)=>a.deadline_date.localeCompare(b.deadline_date) || String(a.deadline_time||'23:59').localeCompare(String(b.deadline_time||'23:59')) || a.notice_id.localeCompare(b.notice_id));
   body.opportunities=actionable.slice(0,30);body.counts.actionable=actionable.length;body.counts.shown=body.opportunities.length;
   body.status=actionable.length?'ready':'no_matches';body.summary=actionable.length?`${actionable.length} candidate procedures have future deadlines in the available feed; verify the official dossier and lot status.`:'No matching future-deadline candidates were identified in the available healthcare feed. This is not a statement about the entire market.';
-  return body;
+  return reportAIState(body,aiReport);
 }
 
-/** One report per company/local date. A same-day outage may recover in place;
+function enrichReport(existing,candidate,aiReport,now) {
+  if(!['ready','no_matches'].includes(existing.status)||!['ready','no_matches'].includes(candidate.status)||existing.source_checked_at!==candidate.source_checked_at)return null;
+  const verified=new Map(candidate.opportunities.filter(row=>row.ai_interpretation).map(row=>[row.notice_id,row]));
+  let additions=0;
+  const opportunities=existing.opportunities.map(row=>{
+    const fresh=verified.get(row.notice_id);
+    if(row.ai_interpretation||!fresh||!row.source_fingerprint||row.source_fingerprint!==fresh.source_fingerprint)return row;
+    additions++;
+    return {...row,ai_interpretation:fresh.ai_interpretation,evidence_gaps:unique([...strings(row.evidence_gaps),...strings(fresh.ai_interpretation.evidence_gaps)])};
+  });
+  if(!additions)return null;
+  return reportAIState({...existing,opportunities,updated_at:now.toISOString()},aiReport);
+}
+
+/** One report per company/local date. A same-day outage may recover in place,
+ * and newly verified AI may enrich the same source snapshot in place;
  * the stable report and delivery IDs prevent repeated notifications. */
 export function buildDailyReports(db,{now=new Date(),feed,aiReport=null}={}) {
   ensureReportSchema(db);
@@ -152,8 +180,12 @@ export function buildDailyReports(db,{now=new Date(),feed,aiReport=null}={}) {
     db.exec('BEGIN IMMEDIATE');
     try {
       const existing=db.prepare('SELECT * FROM reports WHERE company_id=? AND report_date=?').get(company.id,clock.date);
-      if (existing && existing.status !== 'source_unavailable') {results.push(JSON.parse(existing.body_json));db.exec('COMMIT');continue;}
-      const body=candidateReport(company,clock,now,feed,aiReport);
+      let body;
+      if (existing && existing.status !== 'source_unavailable') {
+        const previous=JSON.parse(existing.body_json);
+        if(aiReport?.status==='ready'&&aiReport.source_checked_at===existing.source_checked_at&&feed?.last_successful_check===existing.source_checked_at&&['ready','no_matches'].includes(existing.status))body=enrichReport(previous,candidateReport(company,clock,now,feed,aiReport),aiReport,now);
+        if(!body){results.push(previous);db.exec('COMMIT');continue;}
+      } else body=candidateReport(company,clock,now,feed,aiReport);
       if (existing && body.status==='source_unavailable') {results.push(JSON.parse(existing.body_json));db.exec('COMMIT');continue;}
       body.id=existing?.id||randomUUID();body.revision=existing?existing.revision+1:1;
       if (existing) {

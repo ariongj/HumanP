@@ -1,16 +1,6 @@
-name: HumanPlus daily procurement monitor
+name: HumanPlus manual procurement archive (daily service on Hostinger)
 on:
-  schedule:
-    - cron: '0 10 * * *'
-      timezone: Europe/Belgrade
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - monitor/profile.json
-      - scripts/procurement_monitor.py
-      - scripts/ai_procurement_report.py
-      - .github/workflows/procurement-monitor.yml
 permissions:
   contents: read
 concurrency:

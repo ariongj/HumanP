@@ -5,16 +5,21 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {backup} from 'node:sqlite';
 import {openStore,createCompany} from '../store.mjs';
-import {refreshSource,readSource} from '../source.mjs';
+import {saveSource,markSourceFailure,readSource} from '../source.mjs';
 import {buildDailyReports,runDeliveryTick} from '../reports.mjs';
 
-test('source failure preserves last-known facts but does not advertise a successful check',async()=>{
+test('source failure preserves last-known facts but does not advertise a successful check',()=>{
  const db=openStore(':memory:');const now=new Date('2026-10-22T08:00:00Z');
- const feed={notices:[],last_successful_check:now.toISOString(),run:{status:'ok'}};
- await refreshSource(db,{now,fetcher:async()=>({ok:true,text:async()=>JSON.stringify(feed)})});
+ const feed={notices:[{notice_id:'synthetic-notice',title:'Last-known public source fact'}],last_successful_check:now.toISOString(),run:{status:'ok'}};
+ const aiReport={status:'ready',source_checked_at:now.toISOString(),entries:[]};
+ saveSource(db,{feed,aiReport},now);
  assert.equal(readSource(db).feed.run.status,'ok');
- await refreshSource(db,{now:new Date('2026-10-22T08:11:00Z'),fetcher:async()=>{throw new Error('network down');}});
+ markSourceFailure(db,new Date('2026-10-22T08:11:00Z'));
  assert.equal(readSource(db).feed.last_successful_check,now.toISOString());assert.equal(readSource(db).feed.run.status,'error');
+ assert.deepEqual(readSource(db).feed.notices,feed.notices);assert.deepEqual(readSource(db).aiReport,aiReport);
+ assert.equal(db.prepare('SELECT last_fetch_at FROM source_cache WHERE id=1').get().last_fetch_at,'2026-10-22T08:11:00.000Z');
+ saveSource(db,{feed:{...feed,last_successful_check:'2026-10-22T08:15:00.000Z'},aiReport:null},new Date('2026-10-22T08:15:00Z'));
+ assert.equal(readSource(db).feed.run.status,'ok');assert.equal(db.prepare('SELECT last_error FROM source_cache WHERE id=1').get().last_error,null);
  db.close();
 });
 

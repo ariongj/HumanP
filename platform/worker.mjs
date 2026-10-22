@@ -1,6 +1,6 @@
 import {openStore} from './store.mjs';
 import {config} from './config.mjs';
-import {refreshSource} from './source.mjs';
+import {readSource} from './source.mjs';
 import {buildDailyReports,runDeliveryTick} from './reports.mjs';
 import {backup} from 'node:sqlite';
 import {mkdir,readdir,unlink} from 'node:fs/promises';
@@ -10,7 +10,7 @@ const settings=config();
 const db=openStore(settings.dbPath);
 const now=new Date();
 try {
-  const source=await refreshSource(db,{now});
+  const source=readSource(db);
   const reports=buildDailyReports(db,{now,...source});
   const deliveries=runDeliveryTick(db,{now});
   const backupDir=join(settings.dataDir,'backups');await mkdir(backupDir,{recursive:true,mode:0o700});
