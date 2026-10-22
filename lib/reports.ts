@@ -1,5 +1,5 @@
 import {entityScopeNote,type EntitySelection} from './entity-scope';
-import {filterMarket,marketPopulation,groupMarket,type Row,type Filters} from './domain';
+import {filterMarket,marketPopulation,groupMarket,numberOrNull,type Row,type Filters} from './domain';
 import {filterColumns,activeColumnRules,columnOperators,type ColumnFilters} from './column-filters';
 import {budgetRows,budgetSum} from './budget';
 import {countsBy} from './medical';
@@ -23,7 +23,7 @@ export function buildReport(kind:string,data:{market?:Row;budget?:Row;products?:
    ['audited_execution_2024','Pagesat · auditimi','payments_eur','organization','Baza e auditimit ruhet veçmas nga Thesari; mbulimi mund të ndryshojë.'],
   ]){
    const rows=filterColumns(budgetRows(data.budget||{},id).filter(r=>(!year||String(r.year||r.budget_year)===year)&&(!id.includes('execution')||r.row_type==='organization_total')),context.columnFilters?.[id]||{});
-   sections.push({id,title,note:note+(!year?' Të gjitha vitet ruhen veçmas në rreshta; kur përfshihen disa vite nuk jepet total i kombinuar.':''),rows,columns:columns([[nameKey,'Institucioni'],[valueKey,'EUR'],['year','Viti'],['source_document','Dokumenti'],['pdf_page','Faqja']]),chart:rows.map(r=>({label:String(r[nameKey])+(!year?' · '+String(r.year||r.budget_year):''),value:r[valueKey]})).filter(r=>typeof r.value==='number'&&Number.isFinite(r.value)).sort((a,b)=>b.value-a.value).slice(0,10),unit:'EUR',total:new Set(rows.map(r=>String(r.year||r.budget_year))).size>1?null:budgetSum(rows,valueKey),page:'budget',tab:id});
+   sections.push({id,title,note:note+(!year?' Të gjitha vitet ruhen veçmas në rreshta; kur përfshihen disa vite nuk jepet total i kombinuar.':''),rows,columns:columns([[nameKey,'Institucioni'],[valueKey,'EUR'],['year','Viti'],['source_document','Dokumenti'],['pdf_page','Faqja']]),chart:rows.map(r=>({label:String(r[nameKey])+(!year?' · '+String(r.year||r.budget_year):''),value:numberOrNull(r[valueKey])})).filter((r):r is {label:string;value:number}=>r.value!==null).sort((a,b)=>b.value-a.value).slice(0,10),unit:'EUR',total:new Set(rows.map(r=>String(r.year||r.budget_year))).size>1?null:budgetSum(rows,valueKey),page:'budget',tab:id});
   }
  }else if(kind==='products'){
   const rows=filterColumns((data.products?.records||[]).filter((r:Row)=>(!year||String(r.year??'unknown')===year)&&(!segment||r.brand===segment)&&Object.entries(context.product||{}).every(([k,v])=>!v||(k==='q'?v.toLocaleLowerCase('sq').split(/\s+/).filter(Boolean).every(w=>JSON.stringify(r).toLocaleLowerCase('sq').includes(w)):String(r[k]??'E panjohur')===v))),context.columnFilters?.products||{});

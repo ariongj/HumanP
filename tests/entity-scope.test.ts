@@ -50,6 +50,33 @@ test('year and categories intersect across source taxonomies without equating ca
  assert.deepEqual(fromMarket.filterDataset('products',source.products).records.map((r:any)=>r.id),['p1','p2']);
  const multiple=createEntityScope(source,{brand:'',suppliers:[],year:'2024',categories:['Immunology','Chemistry']});assert.equal(multiple.filterDataset('products',source.products).records.length,2);
 });
+test('alternative market populations keep separate category taxonomies and full procedure links',()=>{
+ const unrelated='220-70020-0731-24-1234-1-2-1';
+ const source={market:{records:[
+  {row_key:'shared',year:'2024',category:'Barna',reference:procedure,supplier:'Supplier A'},
+  {row_key:'different-category',year:'2024',category:'Services',reference:procedure,supplier:'Supplier A'},
+  {row_key:'unrelated',year:'2024',category:'Equipment',reference:unrelated,supplier:'Supplier A'},
+  {row_key:'shared-without-parseable-procedure',year:'2024',category:'Barna',reference:'source-format-unparsed',supplier:'Supplier A'},
+ ],nationalRecords2024:[
+  {row_key:'shared',year:'2024',category:'Mallra',reference:procedure,supplier:'Supplier A'},
+  {row_key:'different-category',year:'2024',category:'Shërbime',reference:procedure,supplier:'Supplier A'},
+  {row_key:'different-supplier',year:'2024',category:'Mallra',reference:procedure,supplier:'Supplier B'},
+  {row_key:'different-year',year:'2025',category:'Mallra',reference:procedure,supplier:'Supplier A'},
+  {row_key:'unrelated',year:'2024',category:'Mallra',reference:unrelated,supplier:'Supplier A'},
+  {row_key:'shared-without-parseable-procedure',year:'2024',category:'Mallra',reference:'source-format-unparsed',supplier:'Supplier A'},
+  {row_key:'not-the-same-award',year:'2024',category:'Punë',reference:'source-format-unparsed',supplier:'Supplier A'},
+ ]}};
+ const scoped=(categories:string[])=>createEntityScope(source,{brand:'',suppliers:['Supplier A'],year:'2024',categories}).filterDataset('market',source.market);
+ const medical=scoped(['Barna']);
+ assert.deepEqual(medical.records.map((r:any)=>r.row_key),['shared','shared-without-parseable-procedure']);
+ assert.deepEqual(medical.nationalRecords2024.map((r:any)=>r.row_key),['shared','different-category','shared-without-parseable-procedure']);
+ // A label that exists in this population remains an exact source-category match,
+ // even when another category shares the same procedure.
+ const national=scoped(['Mallra']);
+ assert.deepEqual(national.nationalRecords2024.map((r:any)=>r.row_key),['shared','unrelated','shared-without-parseable-procedure']);
+ assert.deepEqual(scoped(['Barna','Services']).records.map((r:any)=>r.row_key),['shared','different-category','shared-without-parseable-procedure']);
+ assert.equal(scoped(['Absent']).nationalRecords2024.length,0);
+});
 test('unknown years stay unknown and registry snapshot years never stand in for product award years',()=>{
  const products={records:[{brand:'A',year:null,source_checked_at:'2026-10-18'},{brand:'A',year:2024}]};
  const source={products};assert.equal(createEntityScope(source,{brand:'',suppliers:[],year:'2026'}).filterDataset('products',products).records.length,0);
