@@ -4,7 +4,35 @@
 const root = document.getElementById('app');
 const state = {me:null, opportunities:null, workspaces:[], reports:null, members:[], view:'today', workspaceId:null, search:'', status:'', errors:[], loading:false,drafts:{}};
 let loadSequence = 0;
+let sessionEpoch = 0;
 let toastTimer;
+const staleRequest = () => Object.assign(new Error(''),{stale:true});
+function clearSession(waitingMessage) {
+  sessionEpoch++;loadSequence++;
+  Object.assign(state,{me:null,opportunities:null,workspaces:[],reports:null,members:[],view:'today',workspaceId:null,search:'',status:'',errors:[],loading:false,drafts:{}});
+  document.querySelectorAll('.modal-backdrop').forEach(element=>element.remove());
+  clearTimeout(toastTimer);const notification=document.getElementById('toast');notification.hidden=true;notification.textContent='';
+  document.title='HumanPlus · Procurement workspace';
+  if(waitingMessage)root.replaceChildren(node('main',{id:'main',className:'initial-state',tabindex:'-1'},text('p',waitingMessage)));
+}
+async function transitionSession(path,body,signedOutMessage) {
+  const csrf=state.me?.csrf;
+  clearSession('Updating your session…');
+  try {
+    await api(path,'POST',body,{csrf});
+    if(signedOutMessage)renderAuth(false,signedOutMessage);
+    else await refreshAll();
+  } catch(error) {
+    if(error.stale)throw error;
+    // A failed mutation may leave the server session valid. Re-read it rather
+    // than restoring cached company data or leaving a blank transition screen.
+    try {await refreshAll();} catch(recoveryError) {
+      if(!recoveryError.stale){clearSession();renderAuth(false,`Connection unavailable: ${error.message}`);}
+    }
+    toast(error.message);
+    throw error;
+  }
+}
 const statuses = {watching:'Watching', reviewing:'Reviewing', preparing:'Preparing', submitted:'Submitted', won:'Won', lost:'Lost'};
 const sectors = {healthcare:'Healthcare', it:'IT and technology', construction:'Construction', other:'Other sector'};
 const canEdit = () => state.me && state.me.role !== 'viewer';
@@ -56,16 +84,23 @@ function empty(title,description,action) {return node('div',{className:'empty'},
 function panel(title,description,...children) {return node('section',{className:'panel'},node('div',{className:'panel-head'},node('div',{},text('h2',title),description?text('p',description):null)),children);}
 function detail(label,value) {return node('div',{className:'detail-pair'},text('span',label),text('strong',value));}
 function toast(message) {
+  if(!message)return;
   const element=document.getElementById('toast');element.textContent=message;element.hidden=false;
   clearTimeout(toastTimer);toastTimer=setTimeout(()=>{element.hidden=true;},4500);
 }
-async function api(path,method='GET',body) {
+async function api(path,method='GET',body,options={}) {
+  const epoch=sessionEpoch;
   const headers={Accept:'application/json'};
   if(body!==undefined)headers['Content-Type']='application/json';
-  if(method!=='GET'&&state.me?.csrf)headers['X-CSRF-Token']=state.me.csrf;
-  const response=await fetch(path,{method,headers,credentials:'same-origin',cache:'no-store',...(body!==undefined?{body:JSON.stringify(body)}:{})});
-  let result;
-  try{result=await response.json();}catch{throw new Error('The server returned an unreadable response. Please try again.');}
+  const csrf=options.csrf??state.me?.csrf;
+  if(method!=='GET'&&csrf)headers['X-CSRF-Token']=csrf;
+  let response,result;
+  try{response=await fetch(path,{method,headers,credentials:'same-origin',cache:'no-store',...(body!==undefined?{body:JSON.stringify(body)}:{})});result=await response.json();}
+  catch(error){if(epoch!==sessionEpoch)throw staleRequest();throw new Error('The server could not be reached or returned an unreadable response. Please try again.');}
+  if(epoch!==sessionEpoch)throw staleRequest();
+  if(response.status===401&&!['/api/login','/api/accept-invitation','/api/password'].includes(path)){
+    clearSession();renderAuth(false,'Your session has ended. Sign in again.');throw staleRequest();
+  }
   if(!response.ok){const error=new Error(result.error||'The request could not be completed.');error.status=response.status;throw error;}
   return result;
 }
@@ -73,6 +108,7 @@ function field(label,input,help) {input.setAttribute('aria-label',label);return 
 function input(name,options={}) {return node('input',{name,...options});}
 function select(name,values,current,attrs={}) {return node('select',{name,...attrs},Object.entries(values).map(([value,label])=>node('option',{value,selected:String(current??'')===String(value)},label)));}
 function formError(form,error) {
+  if(error.stale||!form.isConnected)return;
   const target=form.querySelector('.form-error');target.replaceChildren(notice(error.status===409?'Someone updated this workspace. Your changes were not saved. Refresh the workspace and review the latest version before saving again.':error.message,'error'));
   target.focus();
 }
@@ -113,10 +149,11 @@ function go(view,id) {
   history.pushState({},'',view==='workspace'?`#workspace=${encodeURIComponent(id)}`:`#${view}`);render();window.scrollTo(0,0);
 }
 async function refreshAll() {
-  const sequence=++loadSequence;state.loading=true;
+  const sequence=++loadSequence,epoch=sessionEpoch;state.loading=true;
   const me=await api('/api/me');
+  if(sequence!==loadSequence||epoch!==sessionEpoch)throw staleRequest();
   const outcomes=await Promise.allSettled([api('/api/opportunities'),api('/api/workspaces'),api('/api/reports'),api('/api/members')]);
-  if(sequence!==loadSequence)return;
+  if(sequence!==loadSequence||epoch!==sessionEpoch)throw staleRequest();
   state.me=me;state.errors=[];
   const keys=['opportunities','workspaces','reports','members'];
   outcomes.forEach((result,index)=>{
@@ -129,7 +166,8 @@ async function reload() {
   try{await refreshAll();toast('Workspace refreshed.');}catch(error){handleSessionError(error);}
 }
 function handleSessionError(error) {
-  if(error.status===401){state.me=null;renderAuth(false,'Your session has ended. Sign in again.');}
+  if(error.stale)return;
+  if(error.status===401){clearSession();renderAuth(false,'Your session has ended. Sign in again.');}
   else{state.loading=false;state.errors=[error.message];render();}
 }
 function renderAuth(invite,message='') {
@@ -137,7 +175,7 @@ function renderAuth(invite,message='') {
   const form=makeForm(async data=>{
     if(invite){await api('/api/accept-invitation','POST',{token,name:data.get('name'),password:data.get('password')});history.replaceState({},'','#today');}
     else await api('/api/login','POST',{email:data.get('email'),password:data.get('password')});
-    state.view='today';await refreshAll();
+    clearSession();state.view='today';await refreshAll();
   },
     text('span',invite?'JOIN YOUR COMPANY':'YOUR PROCUREMENT WORKSPACE','eyebrow'),
     text('h2',invite?'Accept your invitation':'Welcome back'),
@@ -166,7 +204,7 @@ function render() {
   else if(state.view==='workspace')main.append(renderWorkspace());
   else main.append(renderTeam());
   main.append(node('footer',{className:'page-meta'},text('span','HumanPlus · Company procurement workspace'),text('span','Evidence first. Verify the official dossier before bidding.')));
-  root.replaceChildren(node('div',{className:'workspace'},sidebar,node('div',{className:'main-wrap'},node('header',{className:'topbar'},node('div',{className:'breadcrumb'},'Company workspace',text('span','›'),text('strong',routeNames[state.view])),node('div',{className:'topbar-right'},node('div',{className:'user-display'},text('strong',me.user.name),text('small',readableStatus(me.role))),text('span',initials(me.user.name),'user-avatar'),button('Sign out',async()=>{try{await api('/api/logout','POST',{});state.me=null;state.workspaces=[];state.reports=null;state.members=[];renderAuth(false);}catch(error){toast(error.message);}},'logout'))),main)));
+  root.replaceChildren(node('div',{className:'workspace'},sidebar,node('div',{className:'main-wrap'},node('header',{className:'topbar'},node('div',{className:'breadcrumb'},'Company workspace',text('span','›'),text('strong',routeNames[state.view])),node('div',{className:'topbar-right'},node('div',{className:'user-display'},text('strong',me.user.name),text('small',readableStatus(me.role))),text('span',initials(me.user.name),'user-avatar'),button('Sign out',async()=>{try{await transitionSession('/api/logout',{},'You have signed out.');}catch(error){toast(error.message);}},'logout'))),main)));
   document.title=`${routeNames[state.view]} · ${me.company.name} · HumanPlus`;
 }
 function stat(label,value,description,accent=false) {return node('div',{className:`stat-card ${accent?'accent':''}`},text('span',label,'stat-label'),text('strong',value),text('p',description));}
@@ -254,7 +292,7 @@ function renderWorkspace() {
 function renderTeam() {
   const me=state.me;
   const content=node('div',{},heading('Your team & settings','Manage company context, access and the reports your team receives.',[button('Refresh',reload)]));
-  if(me.companies?.length>1)content.append(panel('Switch company','Each company has its own members, tender workspaces and reports.',field('Active company',select('company',Object.fromEntries(me.companies.map(c=>[c.id,c.name])),me.company.id,{onChange:async event=>{try{await api('/api/switch-company','POST',{companyId:event.target.value});await refreshAll();toast('Company switched.');}catch(error){toast(error.message);render();}}}))));
+  if(me.companies?.length>1)content.append(panel('Switch company','Each company has its own members, tender workspaces and reports.',field('Active company',select('company',Object.fromEntries(me.companies.map(c=>[c.id,c.name])),me.company.id,{onChange:async event=>{try{await transitionSession('/api/switch-company',{companyId:event.target.value});toast('Company switched.');}catch(error){toast(error.message);render();}}}))));
   const companyForm=makeForm(async data=>{await api('/api/company','PATCH',{name:data.get('name'),sector:data.get('sector'),interests:string(data.get('interests')).split('\n').map(s=>s.trim()).filter(Boolean)});await refreshAll();toast('Company profile saved.');},field('Company name',input('name',{value:me.company.name,required:true,maxlength:160,disabled:!isOwner()})),field('Sector',select('sector',sectors,me.company.sector,{disabled:!isOwner()})),field('Interests',node('textarea',{name:'interests',rows:4,maxlength:4000,disabled:!isOwner(),placeholder:'One product, service or interest per line'},(me.company.interests||[]).join('\n')),'Interest terms guide matching. They do not establish your inventory, licences or eligibility.'),isOwner()?submit('Save company profile'):text('p','Only a company owner can change this profile.','read-only-note'));
   const pref=state.reports?.preferences;
   const reporting=panel('Daily reports','Reports are saved for your company, independently of the public archive.',node('div',{className:'detail-list'},detail('Schedule',pref?`${pref.local_time||'10:00'} · ${pref.timezone||'Europe/Tirane'}`:'Not available'),detail('Destination','This company panel'),detail('Private ChatGPT delivery','Not connected')),notice('Saving these settings does not activate a ChatGPT schedule. Private ChatGPT notifications still require a supported, verified connection.','amber'));
@@ -279,14 +317,14 @@ function changeAccess(member) {
   modal(revoke?'Revoke company access':'Restore company access',`${member.name} · ${member.email}`,close=>makeForm(async()=>{await api(`/api/members/${encodeURIComponent(member.id)}`,'PATCH',{status:revoke?'revoked':'active'});close();await refreshAll();toast(revoke?'Company access revoked.':'Company access restored.');},text('p',revoke?'This person will lose access to this company. Their recorded work remains in the workspace.':'This person will regain access to this company with their existing role.','help-text'),node('div',{className:'modal-footer'},button('Cancel',close),submit(revoke?'Revoke access':'Restore access'))));
 }
 function showCreateCompany() {
-  modal('Create a company workspace','Start a separate company with its own team and tender work.',close=>makeForm(async data=>{await api('/api/companies','POST',{name:data.get('name'),sector:data.get('sector')});close();await refreshAll();toast('Company created. You are now in its separate workspace.');},field('Company name',input('name',{required:true,maxlength:160})),field('Sector',select('sector',sectors,'healthcare')),node('div',{className:'modal-footer'},button('Cancel',close),submit('Create company'))));
+  modal('Create a company workspace','Start a separate company with its own team and tender work.',close=>makeForm(async data=>{await transitionSession('/api/companies',{name:data.get('name'),sector:data.get('sector')});toast('Company created. You are now in its separate workspace.');},field('Company name',input('name',{required:true,maxlength:160})),field('Sector',select('sector',sectors,'healthcare')),node('div',{className:'modal-footer'},button('Cancel',close),submit('Create company'))));
 }
 function showPassword() {
-  modal('Change your password','All sessions, including this one, will be signed out after the change.',close=>makeForm(async data=>{if(data.get('newPassword')!==data.get('confirmPassword'))throw new Error('The new passwords do not match.');await api('/api/password','POST',{currentPassword:data.get('currentPassword'),newPassword:data.get('newPassword')});close();state.me=null;renderAuth(false,'Password updated. Sign in with your new password.');},field('Current password',input('currentPassword',{type:'password',required:true,autocomplete:'current-password'})),field('New password',input('newPassword',{type:'password',required:true,minlength:14,maxlength:256,autocomplete:'new-password'}),'At least 14 characters.'),field('Confirm new password',input('confirmPassword',{type:'password',required:true,minlength:14,maxlength:256,autocomplete:'new-password'})),node('div',{className:'modal-footer'},button('Cancel',close),submit('Change password'))));
+  modal('Change your password','All sessions, including this one, will be signed out after the change.',close=>makeForm(async data=>{if(data.get('newPassword')!==data.get('confirmPassword'))throw new Error('The new passwords do not match.');await transitionSession('/api/password',{currentPassword:data.get('currentPassword'),newPassword:data.get('newPassword')},'Password updated. Sign in with your new password.');},field('Current password',input('currentPassword',{type:'password',required:true,autocomplete:'current-password'})),field('New password',input('newPassword',{type:'password',required:true,minlength:14,maxlength:256,autocomplete:'new-password'}),'At least 14 characters.'),field('Confirm new password',input('confirmPassword',{type:'password',required:true,minlength:14,maxlength:256,autocomplete:'new-password'})),node('div',{className:'modal-footer'},button('Cancel',close),submit('Change password'))));
 }
-window.addEventListener('popstate',()=>{const route=parseRoute();if(route.invite){renderAuth(true);return;}Object.assign(state,route);if(state.me)render();});
+window.addEventListener('popstate',()=>{const route=parseRoute();if(route.invite){clearSession();renderAuth(true);return;}Object.assign(state,route);if(state.me)render();});
 (async()=>{
-  const route=parseRoute();if(route.invite){renderAuth(true);return;}
+  const route=parseRoute();if(route.invite){clearSession();renderAuth(true);return;}
   Object.assign(state,route);
-  try{await refreshAll();}catch(error){if(error.status===401)renderAuth(false);else renderAuth(false,`Connection unavailable: ${error.message}`);}
+  try{await refreshAll();}catch(error){if(error.stale)return;if(error.status===401){clearSession();renderAuth(false);}else renderAuth(false,`Connection unavailable: ${error.message}`);}
 })();
