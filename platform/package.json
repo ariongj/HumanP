@@ -1,0 +1,8 @@
+{
+  "name": "humanplus-company-workspace",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {"node": ">=22.13.0"},
+  "scripts": {"start": "node server.mjs", "build": "node --check server.mjs && node --check api.mjs && node --check reports.mjs", "test": "node --test tests/*.test.mjs", "reports": "node worker.mjs"}
+}

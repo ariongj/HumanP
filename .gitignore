@@ -67,3 +67,8 @@ next-env.d.ts
 *.humanplus
 
 __pycache__/
+
+# Server workspace state is private and lives outside releases.
+/platform/.local-data/
+/platform/*.sqlite*
+/platform/node_modules/
