@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "node server.mjs",
-    "build": "node --check server.mjs && node --check api.mjs && node --check reports.mjs && node --check collector.mjs && node --check collection-job.mjs && node --check collect-worker.mjs && node --check ai-report.mjs && node --check public/app.js",
+    "build": "node --check server.mjs && node --check api.mjs && node --check reports.mjs && node --check collector.mjs && node --check collection-job.mjs && node --check collect-worker.mjs && node --check ai-report.mjs && node --check public/app.js && node --check public/scope.js && node --check catalog.mjs",
     "test": "node --test tests/*.test.mjs",
     "reports": "node worker.mjs",
     "collect": "node collect-worker.mjs"

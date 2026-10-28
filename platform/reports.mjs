@@ -147,7 +147,7 @@ function candidateReport(company, clock, now, feed, aiReport) {
     actionable.push({procedure:key,notice_id:String(tender.notice_id),title:String(tender.title||'Untitled notice'),buyer:String(tender.buyer||'Unknown buyer'),category:String(tender.category_sq||'Unclassified'),source_url:url,deadline:due.displayed,deadline_date:due.day,deadline_time:due.time,deadline_timezone:due.timezone,deadline_source_url:officialLink(deadlineSource.source_url),status:'open_candidate_verify_dossier',why_match:[`Within the connected healthcare feed for sector ${company.sector}.`,...matchedKeywords.map(k=>`Company interest matched: ${k}`)],requirements:null,requirements_status:'unknown',evidence_gaps:gaps,related_notice_ids:related.map(r=>String(r.notice_id)),ai_interpretation:ai,source_fingerprint:tender.fingerprint||null});
   }
   actionable.sort((a,b)=>a.deadline_date.localeCompare(b.deadline_date) || String(a.deadline_time||'23:59').localeCompare(String(b.deadline_time||'23:59')) || a.notice_id.localeCompare(b.notice_id));
-  body.opportunities=actionable.slice(0,30);body.counts.actionable=actionable.length;body.counts.shown=body.opportunities.length;
+  body.opportunities=actionable;body.counts.actionable=actionable.length;body.counts.shown=body.opportunities.length;
   body.status=actionable.length?'ready':'no_matches';body.summary=actionable.length?`${actionable.length} candidate procedures have future deadlines in the available feed; verify the official dossier and lot status.`:'No matching future-deadline candidates were identified in the available healthcare feed. This is not a statement about the entire market.';
   return reportAIState(body,aiReport);
 }

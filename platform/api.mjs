@@ -6,6 +6,7 @@ import {id, transaction, audit, createCompany} from './store.mjs';
 import {hashPassword, verifyPassword, token, hash, rateLimit} from './auth.mjs';
 import {listReports} from './reports.mjs';
 import {collectionStatus} from './collection-job.mjs';
+import {catalogFor} from './catalog.mjs';
 const publicRoot=fileURLToPath(new URL('./public/',import.meta.url));
 const fail=(status,message)=>{throw Object.assign(new Error(message),{status});};
 const text=(value,max=200,required=true)=>{
@@ -62,7 +63,7 @@ export function createHandler({db,origin,feedProvider=()=>({feed:null,aiReport:n
       }
       if(!path.startsWith('/api/')){
         if(method!=='GET'&&method!=='HEAD')fail(405,'Method not allowed.');
-        const asset={'/':'index.html','/index.html':'index.html','/app.js':'app.js','/styles.css':'styles.css'}[path];
+        const asset={'/':'index.html','/index.html':'index.html','/app.js':'app.js','/scope.js':'scope.js','/styles.css':'styles.css'}[path];
         if(!asset)fail(404,'Not found.');
         const bytes=await readFile(publicRoot+asset);res.setHeader('Content-Type',asset.endsWith('.js')?'text/javascript; charset=utf-8':asset.endsWith('.css')?'text/css; charset=utf-8':'text/html; charset=utf-8');res.end(method==='HEAD'?undefined:bytes);return;
       }
@@ -153,8 +154,29 @@ export function createHandler({db,origin,feedProvider=()=>({feed:null,aiReport:n
       }
       if(path==='/api/opportunities'&&method==='GET'){
         const {feed,aiReport}=feedProvider();const company=db.prepare('SELECT * FROM companies WHERE id=?').get(s.company_id);const terms=JSON.parse(company.interests_json).map(x=>x.toLowerCase());
-        const notices=company.sector==='healthcare'?noticesFrom(feed).filter(n=>!terms.length||terms.some(t=>(n.title+' '+n.buyer+' '+n.category_sq).toLowerCase().includes(t))).map(n=>({id:n.notice_id,title:n.title||n.listed_title,buyer:n.buyer,deadline:n.deadline_displayed||null,url:n.source_url,category:n.category_sq,score:null,reasons:n.match_reasons||[],classification:n.evidence_classification,requirements:n.gaps||'Check the official tender dossier.'})):[];
+        const notices=company.sector==='healthcare'?noticesFrom(feed).map(n=>({id:String(n.notice_id),title:n.title||n.listed_title||'Untitled notice',buyer:n.buyer,deadline:n.deadline_displayed||null,url:n.source_url,category:n.category_sq,year:n.year||Number(String(n.published_iso||'').slice(0,4))||null,publishedAt:n.published_iso||null,changedAt:n.changed_at||null,procedure:n.procedure_key||n.procurement_code||null,cpv:n.cpv_as_published||null,score:null,reasons:n.match_reasons||[],classification:n.evidence_classification,requirements:n.gaps||'Check the official tender dossier.',companyMatch:!terms.length||terms.some(t=>(n.title+' '+n.buyer+' '+n.category_sq).toLowerCase().includes(t))})):[];
         return json(res,200,{sourceCheckedAt:feed?.last_successful_check||null,sourceStatus:feed?.run?.status||'unavailable',collection:collectionStatus(db,now()),aiStatus:aiReport?.status||'unavailable',aiSourceCheckedAt:aiReport?.source_checked_at||null,coverageNote:company.sector==='healthcare'?(feed?.coverage_note||'Healthcare notices from the official Kosovo portal. Metadata only; verify eligibility in the dossier.'):'This pilot source covers healthcare. Coverage for your sector is not connected yet.',notices});
+      }
+      if(path==='/api/catalog'&&method==='GET')return json(res,200,catalogFor(db,s.company_id));
+      if(path==='/api/catalog'&&method==='POST'){
+        writer(s);const productId=id();const name=text(input.name,180),brand=text(input.brand,160),category=text(input.category||'',120,false),supplier=text(input.supplier||'',160,false),notes=text(input.notes||'',4000,false),sourceUrl=text(input.sourceUrl||'',1000,false);
+        if(sourceUrl){let valid=false;try{const u=new URL(sourceUrl);valid=u.protocol==='https:'&&!u.username&&!u.password;}catch{}if(!valid)fail(400,'Use an HTTPS source link.');}
+        db.prepare('INSERT INTO catalog_products(id,company_id,name,brand,category,supplier,notes,source_url,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?)').run(productId,s.company_id,name,brand,category,supplier,notes,sourceUrl,timestamp(),timestamp());audit(db,s.company_id,s.user_id,'catalog.created',productId);return json(res,201,{id:productId});
+      }
+      const productPath=path.match(/^\/api\/catalog\/([^/]+)$/);
+      if(productPath&&method==='PATCH'){
+        writer(s);const p=db.prepare('SELECT * FROM catalog_products WHERE id=? AND company_id=?').get(productPath[1],s.company_id);if(!p)fail(404,'Company product not found.');
+        if(!Number.isInteger(input.version)||input.version!==p.version)fail(409,'This product changed. Refresh before saving.');
+        const result=db.prepare('UPDATE catalog_products SET name=?,brand=?,category=?,supplier=?,notes=?,version=version+1,updated_at=? WHERE id=? AND company_id=? AND version=?').run(text(input.name,180),text(input.brand,160),text(input.category||'',120,false),text(input.supplier||'',160,false),text(input.notes||'',4000,false),timestamp(),p.id,s.company_id,p.version);
+        if(!result.changes)fail(409,'This product changed. Refresh before saving.');audit(db,s.company_id,s.user_id,'catalog.updated',p.id);return json(res,200,{ok:true});
+      }
+      if(path==='/api/catalog-links'&&(method==='POST'||method==='DELETE')){
+        writer(s);const productId=text(input.productId,100),noticeId=text(input.noticeId,100);
+        if(!catalogFor(db,s.company_id).products.some(p=>p.id===productId))fail(404,'Product not found.');
+        if(!noticesFrom(feedProvider().feed).some(n=>String(n.notice_id)===noticeId))fail(404,'Notice not found.');
+        if(method==='POST')db.prepare('INSERT INTO catalog_links VALUES(?,?,?,?,?) ON CONFLICT(company_id,product_id,notice_id) DO UPDATE SET reason=excluded.reason').run(s.company_id,productId,noticeId,text(input.reason,500),timestamp());
+        else db.prepare('DELETE FROM catalog_links WHERE company_id=? AND product_id=? AND notice_id=?').run(s.company_id,productId,noticeId);
+        audit(db,s.company_id,s.user_id,method==='POST'?'catalog.linked':'catalog.unlinked',productId);return json(res,200,{ok:true});
       }
       if(path==='/api/workspaces'&&method==='GET')return json(res,200,{workspaces:db.prepare('SELECT id FROM workspaces WHERE company_id=? ORDER BY updated_at DESC').all(s.company_id).map(w=>workspace(s,w.id))});
       if(path==='/api/workspaces'&&method==='POST'){

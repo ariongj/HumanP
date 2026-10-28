@@ -3,6 +3,7 @@ import {mkdirSync, chmodSync} from 'node:fs';
 import {dirname} from 'node:path';
 import {randomUUID} from 'node:crypto';
 import {ensureReportSchema} from './reports.mjs';
+import {ensureCatalogSchema} from './catalog.mjs';
 export const id = () => randomUUID();
 export function openStore(path) {
   if (path !== ':memory:') mkdirSync(dirname(path), {recursive: true, mode: 0o700});
@@ -24,6 +25,7 @@ export function openStore(path) {
   CREATE INDEX IF NOT EXISTS workspace_company ON workspaces(company_id);
   CREATE INDEX IF NOT EXISTS session_expiry ON sessions(expires_at);`);
   ensureReportSchema(db);
+  ensureCatalogSchema(db);
   return db;
 }
 export function transaction(db, fn) {

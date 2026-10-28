@@ -1,4 +1,4 @@
-name: Test company workspace
+name: Test and package company workspace
 on:
   push:
     paths: ['platform/**', '.github/workflows/platform.yml']
@@ -14,7 +14,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - run: npm ci
+        working-directory: platform
       - run: npm test
         working-directory: platform
       - run: npm run build
         working-directory: platform
+      - run: node scripts/package-release.mjs
+        working-directory: platform
+      - uses: actions/upload-artifact@v4
+        with:
+          name: humanplus-company-workspace-${{ github.sha }}
+          path: platform/release/
+          retention-days: 14
+          if-no-files-found: error

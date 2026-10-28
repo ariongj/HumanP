@@ -250,3 +250,33 @@ test('password changes invalidate every active session and preserve access on wr
   assert.equal((await f.client().login('owner-a@example.test')).status,401);
   assert.equal((await f.client().login('owner-a@example.test',nextPassword)).status,200);
 });
+
+test('company product library and links enforce tenant isolation, viewer roles and version checks',async t=>{
+ const f=await fixture(t),a=await f.signedIn('owner-a'),b=await f.signedIn('owner-b'),viewer=await f.signedIn('viewer-a');
+ assert.equal((await f.client().request('/api/catalog')).status,401);
+ const body={name:'Synthetic model',brand:'Synthetic brand',supplier:'Private supplier',notes:'Company A only'};
+ assert.equal((await viewer.request('/api/catalog',{method:'POST',body})).status,403);
+ assert.equal((await a.request('/api/catalog',{method:'POST',body:{...body,sourceUrl:'javascript:alert(1)'}})).status,400);
+ const created=await a.request('/api/catalog',{method:'POST',body});assert.equal(created.status,201);const id=created.data.id;
+ const own=await a.request('/api/catalog');assert.equal(own.data.products.filter(p=>p.origin==='research').length,11);
+ assert.equal(own.data.products.find(p=>p.id===id).notes,'Company A only');
+ assert.equal((await b.request('/api/catalog')).data.products.some(p=>p.id===id),false);
+ assert.equal((await b.request('/api/catalog/'+id,{method:'PATCH',body:{...body,version:1}})).status,404);
+ assert.equal((await viewer.request('/api/catalog/'+id,{method:'PATCH',body:{...body,version:1}})).status,403);
+ assert.equal((await a.request('/api/catalog/'+id,{method:'PATCH',body:{...body,version:1,name:'Updated model'}})).status,200);
+ assert.equal((await a.request('/api/catalog/'+id,{method:'PATCH',body:{...body,version:1}})).status,409);
+ const link={productId:id,noticeId:'synthetic-medical-1',reason:'Verified in synthetic dossier'};
+ assert.equal((await b.request('/api/catalog-links',{method:'POST',body:link})).status,404);
+ assert.equal((await viewer.request('/api/catalog-links',{method:'POST',body:link})).status,403);
+ assert.equal((await a.request('/api/catalog-links',{method:'POST',body:{...link,noticeId:'missing'}})).status,404);
+ assert.equal((await a.request('/api/catalog-links',{method:'POST',body:link})).status,200);
+ assert.equal((await a.request('/api/catalog')).data.links.length,1);
+ assert.equal((await b.request('/api/catalog')).data.links.length,0);
+ assert.equal((await a.request('/api/catalog-links',{method:'DELETE',body:link})).status,200);
+ assert.equal((await a.request('/api/catalog')).data.links.length,0);
+});
+test('explorer retains all source notices when company briefing interests do not match',async t=>{
+ const f=await fixture(t),a=await f.signedIn('owner-a');
+ f.db.prepare('UPDATE companies SET interests_json=? WHERE id=?').run('["nonmatching phrase"]',f.companyA);
+ const result=await a.request('/api/opportunities');assert.equal(result.data.notices.length,1);assert.equal(result.data.notices[0].companyMatch,false);
+});

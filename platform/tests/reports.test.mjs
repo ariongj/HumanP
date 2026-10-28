@@ -172,3 +172,11 @@ test('partial AI enrichment adds only newly verified existing candidates; no-mat
  assert.equal(buildDailyReports(db,{now:later,feed:source,aiReport:fullAI}).find(r=>r.company_id==='a').revision,2);
  }finally{db.close();}
 });
+
+test('daily report retains every actionable candidate beyond the previous thirty-row cap',()=>{
+ const db=database();try{company(db,'a');const rows=Array.from({length:73},(_,i)=>notice(String(i+100),{procedure_key:`2026/procedure-${i}`}));
+ const report=buildDailyReports(db,{now:due,feed:feed(due,rows)})[0];
+ assert.equal(report.counts.actionable,73);assert.equal(report.opportunities.length,73);
+ assert.equal(listReports(db,'a')[0].opportunities.length,73);
+ }finally{db.close();}
+});
