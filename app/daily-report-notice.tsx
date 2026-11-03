@@ -24,5 +24,6 @@ export default function DailyReportNotice({onOpen}:{onOpen:()=>void}){
   return()=>{removeEventListener(eventName,update);removeEventListener('storage',update);};
  },[]);
  if(!unread)return null;
- return <div className="agent-report-notice" role="status"><Sparkles size={22}/><div><strong>Raporti ditor AI është gati</strong><p>{daily.date} · {daily.entries?.length||0} procedura me analizë AI. Kontrollo afatet, kërkesat dhe hapat e sugjeruar.</p></div><button className="button secondary" onClick={()=>{markDailyReportRead();onOpen();}}>Lexo raportin ditor <ArrowUpRight size={15}/></button></div>;
+ const fresh=Number.isFinite(Date.parse(daily.generated_at))&&Date.now()-Date.parse(daily.generated_at)<=36*3600000;
+ return <div className="agent-report-notice" role="status"><Sparkles size={22}/><div><strong>{fresh?'Raporti ditor AI është gati':'Raport AI i ruajtur'}</strong><p>{daily.date} · {daily.entries?.length||0} procedura me analizë AI. Kontrollo afatet, kërkesat dhe hapat e sugjeruar.</p></div><button className="button secondary" onClick={()=>{markDailyReportRead();onOpen();}}>{fresh?'Lexo raportin ditor':'Lexo raportin e ruajtur'} <ArrowUpRight size={15}/></button></div>;
 }
